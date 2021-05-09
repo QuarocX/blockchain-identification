@@ -1,0 +1,20 @@
+PORTS="11003:11003 8003:8003" ./../aries-cloudagent-python/scripts/run_docker start \
+  --label Yang \
+  -it http 0.0.0.0 8003 \
+  -ot http \
+  --admin 0.0.0.0 11003 \
+  --admin-insecure-mode \
+  --genesis-url https://idu.cloudcompass.ca/genesis \
+  --seed Yan00000000000000000000000000000 \
+  --wallet-type indy \
+  --wallet-name Yan \
+  --endpoint http://172.17.0.3:8003 \
+  --webhook-url http://172.17.0.5:9003/webhooks \
+  --public-invites \
+  --auto-provision \
+  --auto-ping-connection \
+  --monitor-ping \
+  --debug-connections \
+  --read-only-ledger \
+  --log-level info \
+  --wallet-key secret 
