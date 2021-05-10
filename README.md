@@ -8,15 +8,17 @@ blockchain-identification
 
 ### Do in this order
 
-./yin\_agent.sh
+./yin_agent.sh
 
-./yang\_agent.sh
+./yang_agent.sh
 
-docker run --rm -p 9001:9001 yin\_webhook
+docker build -t yin_webhook yin_webhook/
+docker run --rm -p 9001:9001 yin_webhook
 
-docker run --rm -p 9003:9003 yang\_webhook
+docker build -t yang_webhook yang_webhook/
+docker run --rm -p 9003:9003 yang_webhook
 
-python communication\_service.py -bic 1 -sbm 1
+python communication_service.py -bic 1 -sbm 1
 
 ### Useful stuff 
 
