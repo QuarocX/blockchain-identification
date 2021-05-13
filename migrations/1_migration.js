@@ -1,5 +1,6 @@
 const anonymousVotingContract = artifacts.require("AnonymousVoting");
 const localCryptoContract = artifacts.require("LocalCrypto");
+const anonVotingController = artifacts.require("VotingController");
 
 module.exports = async function (deployer) {
     // AnonymousVoting's contructor takes 2 arguments:
@@ -9,4 +10,8 @@ module.exports = async function (deployer) {
     await deployer.deploy(anonymousVotingContract, 60,
             "0xf9476075c27f7a648dc55cbc42871b39a7b90988");
     await deployer.deploy(localCryptoContract);
+    await deployer.deploy(anonVotingController, anonymousVotingContract.address);
+
+    let deployedContract = await anonymousVotingContract.deployed();
+    await deployedContract.transferOwnership(anonVotingController.address);
 };
