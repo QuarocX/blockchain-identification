@@ -14,4 +14,16 @@ module.exports = async function (deployer) {
 
     let deployedContract = await anonymousVotingContract.deployed();
     await deployedContract.transferOwnership(anonVotingController.address);
+
+    let htmls = ['stockapp/admin.html'];
+    console.log("\n   Update your HTMLs");
+    console.log("   -----------------");
+
+    for(let i = 0; i < htmls.length; i++) {
+        let script = "./scripts/update_addresses.sh " + htmls[i] + " "
+                       + anonVotingController.address + " " + localCryptoContract.address;
+        console.log(("   > " + htmls[i]  + ": ").padEnd(26, ' ') + script);
+    }
+    console.log("\n   Make sure to update the abi field in those pages if necessary");
+    console.log("\n");
 };
