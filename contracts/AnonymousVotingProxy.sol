@@ -2,7 +2,7 @@ pragma solidity ^0.4.3;
 
 import "./AnonymousVoting.sol";
 
-/*
+/**
  * The purpose of this contract is to provide a semi-identical interface
  * to that of `AnonymousVoting`. It's aim is to introduce changes to
  * `AnonymousVoting` without altering its source code. By intercepting
@@ -180,7 +180,7 @@ contract AnonymousVotingProxy is owned {
          uint _finishSignupPhase, uint _endSignupPhase,
          uint _endCommitmentPhase, uint _endVotingPhase, uint _endRefundPhase,
          uint _depositrequired)
-    public payable returns (bool)
+    onlyOwner public payable returns (bool)
     {
         require(_finishSignupPhase > 0 + gap() && _depositrequired >= 0, "beginSignUp require check 1 failed");
 
@@ -229,7 +229,7 @@ contract AnonymousVotingProxy is owned {
     }
 
     function finishRegistrationPhase()
-    public returns (bool)
+    onlyOwner public returns (bool)
     {
         return anonVoting.finishRegistrationPhase();
     }
@@ -249,7 +249,7 @@ contract AnonymousVotingProxy is owned {
     }
 
     function computeTally()
-    public
+    onlyOwner public
     {
         anonVoting.computeTally();
     }
@@ -261,7 +261,7 @@ contract AnonymousVotingProxy is owned {
     }
 
     function setEligible(address[] addr)
-    public
+    onlyOwner public
     {
         anonVoting.setEligible(addr);
     }
