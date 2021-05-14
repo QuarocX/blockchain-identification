@@ -56,6 +56,37 @@ Migrate the built contracts. Make sure to pass a valid `charity` address to
 truffle migrate
 ```
 
+To automatically update the HTML pages inside `stockapp` with the new contract
+addresses, set the `UPDATE_HTML` env variable before executing the command.
+
+```
+UPDATE_HTML=1 truffle migrate
+```
+
+## Update addresses in stockapp
+
+If you have not set `UPDATE_HTML=1` during migration, html pages under
+`stockapp` will still be referencing old versions of the contracts. Update the
+pages manually or by using the dedicated script under tools:
+
+```
+./tools/update_addresses.sh stockapp/admin.html ADDR_VOTING_CTRL ADDR_LOCAL_CRYPTO
+./tools/update_addresses.sh stockapp/vote.html,stockapp/livefeed.html
+ADDR_ANON_VOTING ADDR_LOCAL_CRYPTO
+```
+
+Note that `admin.html` uses the address of `VotingController` while `vote.html`
+and `livefeed.html` use the address of `AnonymousVoting` contract.
+
+The output from a successful `truffle migrate` outputs the commands needed to
+update different the contracts.
+
+To get the addresses of the newest versions of the contracts:
+
+```
+truffle network
+```
+
 ## Test
 
 ```
