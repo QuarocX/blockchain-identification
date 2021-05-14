@@ -15,17 +15,35 @@ module.exports = async function (deployer) {
     let deployedContract = await anonymousVotingContract.deployed();
     await deployedContract.transferOwnership(anonVotingController.address);
 
-    let htmls = ['stockapp/admin.html', 'stockapp/vote.html', 'stockapp/livefeed.html'];
+    let htmls = {
+        'stockapp/admin.html': [anonVotingController.address, localCryptoContract.address],
+        'stockapp/vote.html': [anonymousVotingContract.address, localCryptoContract.address],
+        'stockapp/livefeed.html': [anonymousVotingContract.address, localCryptoContract.address]
+    };
+    let cmd = [
+        './tools/update_addresses.sh',
+        null, // target file(s), set later
+        null,
+        null
+    ];
+
     console.log("\n   Update your HTMLs");
     console.log("   -----------------");
-    let script = "./scripts/update_addresses.sh {TARGET} "
-                   + anonVotingController.address + " " + localCryptoContract.address;
+    const { exec } = require('child_process');
 
-    for(let i = 0; i < htmls.length; i++) {
-        let formattedScript = script.replace('{TARGET}', htmls[i]);
-        console.log(("   > " + htmls[i]  + ": ").padEnd(26, ' ') + formattedScript);
+    for (const [key, value] of Object.entries(htmls)) {
+        cmd[1] = key;
+        cmd[2] = value[0];
+        cmd[3] = value[1];
+        let formattedScript = cmd.join(' ');
+        console.log(("   > " + key  + ": ").padEnd(29, ' ') + formattedScript);
+
+        if (process.env.UPDATE_HTML) {
+            exec(cmd.join(' '));
+        }
     }
-    console.log(("   > All: ").padEnd(26, ' ') + script.replace('{TARGET}', htmls.join()));
+
+    console.log(("   > Auto patched: ").padEnd(29, ' ') + (process.env.UPDATE_HTML ? 'yes' : 'no'));
     console.log("\n   Make sure to update the abi field in those pages if necessary");
     console.log("\n");
 };
