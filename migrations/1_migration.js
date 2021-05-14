@@ -15,15 +15,17 @@ module.exports = async function (deployer) {
     let deployedContract = await anonymousVotingContract.deployed();
     await deployedContract.transferOwnership(anonVotingController.address);
 
-    let htmls = ['stockapp/admin.html'];
+    let htmls = ['stockapp/admin.html', 'stockapp/vote.html', 'stockapp/livefeed.html'];
     console.log("\n   Update your HTMLs");
     console.log("   -----------------");
+    let script = "./scripts/update_addresses.sh {TARGET} "
+                   + anonVotingController.address + " " + localCryptoContract.address;
 
     for(let i = 0; i < htmls.length; i++) {
-        let script = "./scripts/update_addresses.sh " + htmls[i] + " "
-                       + anonVotingController.address + " " + localCryptoContract.address;
-        console.log(("   > " + htmls[i]  + ": ").padEnd(26, ' ') + script);
+        let formattedScript = script.replace('{TARGET}', htmls[i]);
+        console.log(("   > " + htmls[i]  + ": ").padEnd(26, ' ') + formattedScript);
     }
+    console.log(("   > All: ").padEnd(26, ' ') + script.replace('{TARGET}', htmls.join()));
     console.log("\n   Make sure to update the abi field in those pages if necessary");
     console.log("\n");
 };
