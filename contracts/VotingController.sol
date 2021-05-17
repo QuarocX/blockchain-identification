@@ -15,13 +15,14 @@ contract VotingController is AnonymousVotingProxy {
     address[] public addresses; // use this for iterating and sending all addresses
     mapping (address => bool) public eligible; // for efficient checking
 
-    function register() {
+    function preRegister() payable {
         address _sender = msg.sender;
-        require(!eligible[_sender], "this address is already eligible for voting");
+        require(!eligible[_sender], "this address already is eligible for voting");
         // TODO: do some additional checks and call authentication contract
 
         // on success: add this address as eligible voter
-        addresses.push(msg.sender);
+        eligible[_sender] = true;
+        addresses.push(_sender);
     }
 
     /* Send all collected addresses as an array to the anonymous voting contract
@@ -29,6 +30,11 @@ contract VotingController is AnonymousVotingProxy {
     Do not expose this function to anyone but this contract.
      */
     function setEligible() private {
-        anonymousContract.setEligible(addresses);
+        anonVoting.setEligible(addresses);
+    }
+
+
+    function getPreRegisteredVoterCount() view returns (uint) {
+        return addresses.length;
     }
 }
