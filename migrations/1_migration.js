@@ -18,7 +18,8 @@ module.exports = async function (deployer) {
     let htmls = {
         'stockapp/admin.html': [anonVotingController.address, localCryptoContract.address],
         'stockapp/vote.html': [anonymousVotingContract.address, localCryptoContract.address],
-        'stockapp/livefeed.html': [anonymousVotingContract.address, localCryptoContract.address]
+        'stockapp/livefeed.html': [anonymousVotingContract.address, localCryptoContract.address],
+        'stockapp/preregistration.html': [anonVotingController.address, ""]
     };
     let cmd = [
         './tools/update_addresses.sh',
