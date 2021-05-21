@@ -260,11 +260,12 @@ contract AnonymousVotingProxy is owned {
         anonVoting.sendToCharity();
     }
 
-    function setEligible(address[] addr)
+    // Do not allow to set a whitelist by the admin 
+    /*function setEligible(address[] addr)
     onlyOwner public
     {
         anonVoting.setEligible(addr);
-    }
+    }*/
 
     function withdrawRefund()
     public
