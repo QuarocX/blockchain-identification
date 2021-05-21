@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Templehof Voting App</title>
+        <link rel="stylesheet" href="vendor/bootstrap/css/bootstrap.min.css">
+        <script src="vendor/angularjs/angular.js"></script>
+        <script src="vendor/angularjs/angular-ui-router.js"></script>
+        <script src="vendor/web3/web3.min.js"></script>
+
+        <script src="scripts/main.js"></script>
+        <script src="scripts/components/alerts/alerts.js"></script>
+        <script src="scripts/components/root/root.js"></script>
+        <script src="scripts/components/home/home.js"></script>
+        <script src="scripts/services/notifications.js"></script>
+        <script src="scripts/services/contractloader.js"></script>
+        <script src="scripts/services/votingcontroller.js"></script>
+        <script src="scripts/config.js"></script>
+    </head>
+    <body> 
+        <div ui-view="layout"></div>
+    </body>
+</html>
