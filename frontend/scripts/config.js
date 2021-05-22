@@ -1,7 +1,7 @@
 (function(){
     window.app.ng.config(($logProvider, $stateProvider,
         $urlRouterProvider, votingControllerProvider,
-        anonymousVotingProvider) => {
+        anonymousVotingProvider, localCryptoProvider) => {
 
         $logProvider.debugEnabled(true);
         votingControllerProvider.setParams(
@@ -10,6 +10,9 @@
         anonymousVotingProvider.setParams(
             window.app.contracts.AnonymousVoting.address,
             '/data/' + window.app.contracts.AnonymousVoting.abi);
+        localCryptoProvider.setParams(
+            window.app.contracts.LocalCrypto.address,
+            '/data/' + window.app.contracts.LocalCrypto.abi);
 
         $stateProvider.state('root', {
             abstract: true,
@@ -19,8 +22,9 @@
                 }
             },
             resolve: {
-                authContract: (votingController, anonymousVoting) => {
-                    return Promise.all([votingController.ready(), anonymousVoting.ready()]);
+                authContract: (votingController, anonymousVoting, localCrypto) => {
+                    return Promise.all([votingController.ready(), anonymousVoting.ready(),
+										localCrypto.ready()]);
                 }
             }
         })

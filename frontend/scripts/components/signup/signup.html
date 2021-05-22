@@ -1,12 +1,11 @@
 <div>
     <div ng-if="!data.signupFinished">
-        <p> You have {{data.balance}} ether.</p>
+        <div ng-if="data.registered">
+            <p>You have already registered.</p>
+        </div>
 
-        <p>Registration for voting on: </p>
-
-        <h3>{{ data.question }}</h3>
-
-        <form>
+        <form ng-if="!data.registered">
+            <p> Registration requires {{data.depositrequired}} ETH deposit. You have {{data.balance}} ether.</p>
             <div class="form-group mb-2">
                 <textarea class="form-control"
                           id="exampleFormControlTextarea1"
@@ -19,6 +18,7 @@
                            for="customFile">Select voters.txt</label>
             </div>
             <button ng-click="register()" class="w-100 btn btn-primary btn-lg mb-3" type="submit" ng-disabled="!data.codes">Register</button>
+        </form>
         <div class="text-left">
             <small class="text-muted">
             {{data.totalregistered}}/{{data.totaleligible}} voters have registered. <br />
@@ -27,7 +27,6 @@
             phase does not finish.</br >
             </small>
         </div>
-        </form>
     </div>
     <div ng-if="data.signupFinished">
         Registration is closed.

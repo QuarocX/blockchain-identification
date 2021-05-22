@@ -17,10 +17,13 @@
     window.app.ng.component('signup',{
         templateUrl: '/scripts/components/signup/signup.html',
         controller: function($scope, $state, anonymousVoting,
-            notificationsService, web3) {
+            notificationsService, web3, localCrypto) {
+            var x, xG, v, w, r, d;
             const currentTime = new Date().getTime();
 
             let data = {
+                depositrequired: web3.fromWei(anonymousVoting.depositrequired()),
+                registered: anonymousVoting.registered(),
                 question: anonymousVoting.question(),
                 totaleligible: anonymousVoting.totaleligible(),
                 totalregistered: anonymousVoting.totalregistered(),
@@ -40,9 +43,26 @@
             data.endSignupPhaseFormatted = clockformat(date);
 
             console.log(data);
+
             $scope.data = data;
             $scope.register = () => {
+                let single_zkp = localCrypto.createZKP(x, v, xG);
+                let vG = [single_zkp[1], single_zkp[2], single_zkp[3]];
 
+                // Lets make sure the ZKP is valid!
+                let verifyres = localCrypto.verifyZKP(xG, single_zkp[0], vG);
+                if (!verifyres) {
+                    notificationsService.error("Problem with voting codes");
+                    return;
+                }
+                if (anonymousVoting.register(xG, vG, single_zkp[0])) {
+                    notificationsService.success("Successfully registered");
+                    data.registered = anonymousVoting.registered();
+                    data.totalregistered = anonymousVoting.totalregistered();
+                } else {
+                    notificationsService.error(
+                    "Registration failed... Problem could be your voting codes or that you have already registered");
+                }
             }
             $scope.onFileSelected = (event) => {
                 var input = event.target;
