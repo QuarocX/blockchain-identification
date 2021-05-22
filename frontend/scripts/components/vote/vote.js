@@ -9,10 +9,22 @@
                 registered: anonymousVoting.registered()
             };
             console.log(data);
-            if (data.state == 1) {
-                $state.go('root.state.vote.signup');
-            } else {
-                console.error("Unsupported state");
+            switch (data.state) {
+                case 1: {
+                    $state.go('root.state.vote.signup', null, { location: 'replace'} );
+                    break;
+                }
+                case 2: {
+                    console.error('Commitment phase not supported');
+                    break;
+                }
+                case 3: {
+                    $state.go('root.state.vote.cast', null, { location: 'replace' });
+                    break;
+                }
+                default: {
+                    console.error("Unsupported state");
+                }
             }
         }
     });
