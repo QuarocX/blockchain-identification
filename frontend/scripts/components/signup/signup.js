@@ -46,16 +46,7 @@
 
             $scope.data = data;
             $scope.register = () => {
-                let single_zkp = localCrypto.createZKP(x, v, xG);
-                let vG = [single_zkp[1], single_zkp[2], single_zkp[3]];
-
-                // Lets make sure the ZKP is valid!
-                let verifyres = localCrypto.verifyZKP(xG, single_zkp[0], vG);
-                if (!verifyres) {
-                    notificationsService.error("Problem with voting codes");
-                    return;
-                }
-                if (anonymousVoting.register(xG, vG, single_zkp[0])) {
+                if (anonymousVoting.register(x, xG, v, w, r, d)) {
                     notificationsService.success("Successfully registered");
                     data.registered = anonymousVoting.registered();
                     data.totalregistered = anonymousVoting.totalregistered();

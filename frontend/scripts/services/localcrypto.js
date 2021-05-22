@@ -29,6 +29,16 @@
             return this.contract.verifyZKP.call(
                 xG, zkp, vG, { from: this.activeAccount });
         }
+        create1outof2ZKPYesVote(xG, yG, w, r, d, x) {
+            return this.contract.create1outof2ZKPYesVote.call(
+                xG, yG, w, r, d, x, { from: this.activeAccount }
+            );
+        }
+        create1outof2ZKPNoVote(xG, yG, w, r, d, x) {
+            return this.contract.create1outof2ZKPNoVote.call(
+                xG, yG, w, r, d, x, { from: this.activeAccount }
+            );
+        }
     }
 
     window.app.ng.provider('localCrypto', function() {

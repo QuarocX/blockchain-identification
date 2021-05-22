@@ -52,6 +52,10 @@
             url: '/signup',
             template: '<signup></signup>'
         })
+        .state('root.state.vote.cast', {
+            url: '/cast',
+            template: '<cast></cast>'
+        })
         $urlRouterProvider.otherwise('');
     });
 })();
