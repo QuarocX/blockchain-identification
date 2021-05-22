@@ -3,26 +3,19 @@
         ng: null,
         net: {},
         util: {},
-        contracts: {
-            'votingController': {
-                'abi': '/abis/VotingController.json',
-                'address': '0x26745A9439DABCe56531323660591D118FC9560C'
-            },
-            'authenticator': {
-                'abi': '/abis/authenticator.json',
-                'address': '0x26'
-            },
-            'voting': {
-                'abi': '/abis/voting.json',
-                'address': '0x26'
-            }
-        }
+        contracts: null
     };
     window.app.ng = angular.module('votingApp', ['ui.router']);
-    let web3 = new Web3(Web3.providers.HttpProvider("ws://localhost:7545"));
-    window.app.ng.value('web3', web3);
+    let web3 = new Web3(new Web3.providers.HttpProvider("http://192.168.178.6:7545"));
+    window.app.ng.constant('web3', web3);
 
-    angular.element(() => {
-        angular.bootstrap(document, ['votingApp']);
-    });
+	fetch('/data/manifest.json')
+		.then(data => (data.json()))
+		.then((contracts) => {
+			window.app.contracts = contracts;
+		}).then(() => {
+			angular.element(() => {
+				angular.bootstrap(document, ['votingApp']);
+			});
+		});
 })();

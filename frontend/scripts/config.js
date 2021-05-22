@@ -1,43 +1,53 @@
 (function(){
     window.app.ng.config(($logProvider, $stateProvider,
-        $urlRouterProvider, votingControllerProvider) => {
-
-        votingControllerProvider.setParams(
-            window.app.contracts.votingController.address,
-            window.app.contracts.votingController.abi);
+        $urlRouterProvider, votingControllerProvider,
+        anonymousVotingProvider) => {
 
         $logProvider.debugEnabled(true);
+        votingControllerProvider.setParams(
+            window.app.contracts.VotingController.address,
+            '/data/' + window.app.contracts.VotingController.abi);
+        anonymousVotingProvider.setParams(
+            window.app.contracts.AnonymousVoting.address,
+            '/data/' + window.app.contracts.AnonymousVoting.abi);
+
         $stateProvider.state('root', {
+            abstract: true,
             views: {
                 'layout': {
                     template: '<root></root>'
+                }
+            },
+            resolve: {
+                authContract: (votingController, anonymousVoting) => {
+                    return Promise.all([votingController.ready(), anonymousVoting.ready()]);
                 }
             }
         })
         .state('root.home', {
             url: '/',
             template: '<home></home>',
-            resolve: {
-                authContract: (votingController) => {
-                    return votingController.ready();
-                }
-            }
         })
-        .state('root.authed', {
+        .state('root.account', {
+            url: '/account',
+            template: '<accounts></accounts>'
         })
-        .state('root.authed.dashboard', {
-            url: '/dashboard',
-            template: '<dashboard></dashboard>',
+        .state('root.state', {
+            url: '/:account',
+            template: '<state></state>'
         })
-        .state('root.authed.exam', {
-            abstract: true,
-            url: '/exams/:exam_id',
-            template: '<exam></exam>'
+        .state('root.state.preregister', {
+            url: '/preregister',
+            template: '<preregister></preregister>'
         })
-        .state('root.authed.exam.question', {
-            url: '/:question_hash',
-            template: '<question></question>'
-        });
+        .state('root.state.vote', {
+            url: '/vote',
+            template: '<vote></vote>'
+        })
+        .state('root.state.vote.signup', {
+            url: '/signup',
+            template: '<signup></signup>'
+        })
         $urlRouterProvider.otherwise('');
     });
 })();
