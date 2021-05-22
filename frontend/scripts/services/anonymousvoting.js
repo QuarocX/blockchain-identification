@@ -146,6 +146,9 @@
             }
             return false;
         }
+        finaltally(index) {
+            return this.contract.finaltally(index).toNumber();
+        }
     }
 
     window.app.ng.provider('anonymousVoting', function() {

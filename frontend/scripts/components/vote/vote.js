@@ -11,7 +11,8 @@
             console.log(data);
             switch (data.state) {
                 case 1: {
-                    $state.go('root.state.vote.signup', null, { location: 'replace'} );
+                    $state.go('root.state.vote.signup', null, {
+                        location: 'replace'});
                     break;
                 }
                 case 2: {
@@ -19,7 +20,13 @@
                     break;
                 }
                 case 3: {
-                    $state.go('root.state.vote.cast', null, { location: 'replace' });
+                    $state.go('root.state.vote.cast', null, {
+                        location: 'replace'});
+                    break;
+                }
+                case 4: {
+                    $state.go('root.state.vote.result', null, {
+                        location: 'replace'})
                     break;
                 }
                 default: {
