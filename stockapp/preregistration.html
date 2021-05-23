@@ -89,7 +89,7 @@
         }
 
         function register() {
-            if(!controllerAddr.openPreRegistration) {
+            if(!controllerAddr.openPreRegistration()) {
                 alert("pre-registration has closed")
                 return;
             }
@@ -114,7 +114,6 @@
                 result = result + "<li>" + resultAddr + "</li>";
             }
 
-            console.log(result)
             document.getElementById('preVoters').innerHTML = result;
         }
 
