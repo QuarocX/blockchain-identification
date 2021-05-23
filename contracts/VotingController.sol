@@ -14,8 +14,11 @@ contract VotingController is AnonymousVotingProxy {
     */
     address[] public addresses; // use this for iterating and sending all addresses
     mapping (address => bool) public eligible; // for efficient checking
+    bool public openPreRegistration = true;
 
     function preRegister() {
+        require(addresses.length <= 40, "Maximum of voters reached");
+        require(openPreRegistration, "pre-registration phase has ended");
         address _sender = msg.sender;
         require(!eligible[_sender], "this address already is eligible for voting");
         // TODO: do some additional checks and call authentication contract
@@ -32,7 +35,10 @@ contract VotingController is AnonymousVotingProxy {
     TODO: Maybe add some cooldown or something...
      */
     function endPreRegistration() onlyOwner public {
+        require(addresses.length >= 3, "Minimum of 3 voters required");
+        require(openPreRegistration, "pre-registration already ended");
         anonVoting.setEligible(addresses);
+        openPreRegistration = false;
     }
 
     function getPreRegisteredVoterCount() view returns (uint) {
