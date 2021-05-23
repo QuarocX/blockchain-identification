@@ -1,16 +1,15 @@
 (function(){
     window.app.ng.component('result',{
         templateUrl: '/scripts/components/result/result.html',
-        controller: function($scope, $state, anonymousVoting) {
-            let data = {
-                totalregistered: anonymousVoting.totalregistered(),
-                totalvoted: anonymousVoting.totalvoted(),
-                yes: anonymousVoting.finaltally(0),
-                total: anonymousVoting.finaltally(1)
-            };
-            data.no = data.total - data.yes;
-            console.log(data);
-            $scope.data = data;
+        controller: async function($scope, $state, anonymousVoting) {
+            $scope.data = {};
+            $scope.data.totalregistered =
+                await anonymousVoting.totalregistered(),
+            $scope.data.totalvoted = await anonymousVoting.totalvoted(),
+            $scope.data.yes = await anonymousVoting.finaltally(0),
+            $scope.data.total = await anonymousVoting.finaltally(1)
+            $scope.data.no = $scope.data.total - $scope.data.yes;
+            $scope.$apply();
         }
     });
 })();

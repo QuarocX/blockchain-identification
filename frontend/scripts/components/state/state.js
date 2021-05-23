@@ -4,9 +4,9 @@
         controller: function($scope, $state, web3,
         votingController, localCrypto, anonymousVoting) {
             $scope.account = $state.params.account;
-            $scope.question = anonymousVoting.question();
-            if (!web3.personal.unlockAccount($state.params.account, ''))
-                throw 'Could not unlock account';
+            anonymousVoting.question().then((v) => {
+                $scope.question = v;
+            });
 
             votingController.setActiveAccount($state.params.account);
             localCrypto.setActiveAccount($state.params.account);

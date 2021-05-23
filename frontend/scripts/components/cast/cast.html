@@ -1,18 +1,33 @@
 <div class="mt-4">
-<div ng-if="!data.votingFinished">
-        <button ng-click="castYes()" type="button" class="btn btn-success btn-block">Yes</button>
-        <button ng-click="castNo()" type="button" class="btn btn-danger btn-block">No</button>
-        <p class="mt-4">{{data.totalvoted}}/{{data.totaleligible}}
-        votes have been cast. </p>
-        <p>
-            <small class="text-muted">
-             Your deposit can be refunded after {{data.endVotingPhaseFormatted}} if Ethereum has accepted your encrypted vote.
-            </small>
-        </p>
-</div>
-<div ng-if="data.votingFinished">
-    You did not cast your encrypted vote in time.
-    Your deposit will not be returned.
-</div>
+    <div ng-if="!data.votingFinished && !data.votecast">
+        <button ng-click="castYes()" ng-disabled="loading.yes || loading.no"
+            type="button" class="btn btn-success btn-block">
+            <span ng-show="!loading.yes">Yes</span>
+            <span ng-show="loading.yes" role="status" aria-hidden="true"
+                class="spinner-border spinner-border-sm"></span>
+        </button>
+        <button ng-click="castNo()" ng-disabled="loading.yes || loading.no"
+            type="button" class="btn btn-danger btn-block">
+            <span ng-show="!loading.no">No</span>
+            <span ng-show="loading.no" class="spinner-border spinner-border-sm"
+                role="status" aria-hidden="true"></span>
+        </button>
+    </div>
+    <div ng-if="data.votingFinished">
+        You did not cast your encrypted vote in time.
+        Your deposit will not be returned.
+    </div>
+    <div ng-if="data.votecast">
+        <h3>
+            <span class="badge badge-secondary">You vote has been cast</span>
+        </h3>
+    </div>
+    <p class="mt-4">{{data.totalvoted}}/{{data.totaleligible}}
+        votes have been cast.</p>
+    <p><small class="text-muted">
+         Your deposit can be refunded after
+         {{data.endVotingPhaseFormatted}} if Ethereum has accepted your
+         encrypted vote.
+    </small></p>
 </div>
 

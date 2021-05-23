@@ -6,8 +6,7 @@
         async load(address, abiPath) {
             let result = await fetch(abiPath);
             let abiJson = await result.json();
-            let contract = this.web3.eth.contract(abiJson);
-            return contract.at(address);
+            return new this.web3.eth.Contract(abiJson, address);
         }
     }
     window.app.ng.factory('contractLoader', (web3) => {

@@ -1,4 +1,85 @@
 (function(){
+    window.app.ng.component('signup',{
+        templateUrl: '/scripts/components/signup/signup.html',
+        controller: function($scope, $state, anonymousVoting,
+            notificationsService, web3, localCrypto) {
+            var x, xG, v, w, r, d;
+
+            let data = {
+                depositrequired: anonymousVoting.depositrequired()
+                    .then(web3.utils.fromWei),
+                registered: anonymousVoting.registered(),
+                question: anonymousVoting.question(),
+                totaleligible: anonymousVoting.totaleligible(),
+                totalregistered: anonymousVoting.totalregistered(),
+                endSignupPhase: anonymousVoting.endSignupPhase()
+                    .then((v) => (new Date(v)))
+                    .then(clockformat),
+                finishSignupPhase: anonymousVoting.finishSignupPhase()
+                    .then((v) => (new Date(v)))
+                    .then(clockformat),
+                registered: anonymousVoting.registered(),
+                signupFinished: anonymousVoting.endSignupPhase()
+                    .then((val) => ((new Date()).getTime() > val)),
+                balance: web3.eth.getBalance($state.params.account)
+                    .then(web3.utils.fromWei),
+            };
+            $scope.data = {
+                codes: '',
+                loading: false
+            };
+            for (const [k, v] of Object.entries(data)) {
+                v.then((val) => {
+                    $scope.data[k] = val;
+                    $scope.$apply();
+                });
+            }
+            $scope.register = () => {
+                $scope.loading = true;
+                anonymousVoting.register(x, xG, v, w, r, d).then(() => {
+                    notificationsService.success("Successfully registered");
+                    anonymousVoting.registered().then((res) => {
+                        $scope.data.registered = res;
+                        $scope.$apply();
+                    });
+                    anonymousVoting.totalregistered().then((res) => {
+                        $scope.data.totalregistered = res;
+                        $scope.loading = false;
+                        $scope.$apply();
+                    });
+                    $scope.$apply();
+                }, () => {
+                    $scope.loading = false;
+                    notificationsservice.error(
+                        "Registration failed... Problem could be your voting codes or that you have already registered");
+                    $scope.$apply();
+                });
+            }
+            $scope.onFileSelected = (event) => {
+                var input = event.target;
+                var reader = new FileReader();
+                reader.onload = () => {
+                    var text = reader.result.split("\n");
+                    var row = text[0].split(",");
+                    // We are expecting 7 numbers...
+                    if (row.length == 7) {
+                        x = row[0];
+                        xG = [row[1], row[2]];
+                        v = row[3];
+                        w = row[4];
+                        r = row[5];
+                        d = row[6];
+                        $scope.data.codes = reader.result;
+                    } else {
+                        notificationsService.error("Problem with uploaded file..." + row.length);
+                    }
+                    $scope.$apply();
+                }
+                reader.readAsText(input.files[0]);
+            };
+        }
+    });
+
     function clockformat(date) {
        var mins = "";
 
@@ -13,71 +94,4 @@
 
        return toString;
     }
- 
-    window.app.ng.component('signup',{
-        templateUrl: '/scripts/components/signup/signup.html',
-        controller: function($scope, $state, anonymousVoting,
-            notificationsService, web3, localCrypto) {
-            var x, xG, v, w, r, d;
-            const currentTime = new Date().getTime();
-
-            let data = {
-                depositrequired: web3.fromWei(anonymousVoting.depositrequired()),
-                registered: anonymousVoting.registered(),
-                question: anonymousVoting.question(),
-                totaleligible: anonymousVoting.totaleligible(),
-                totalregistered: anonymousVoting.totalregistered(),
-                endSignupPhase: anonymousVoting.endSignupPhase(),
-                finishSignupPhase: anonymousVoting.finishSignupPhase(),
-                registered: anonymousVoting.registered(),
-                signupFinished: currentTime > anonymousVoting.endSignupPhase(),
-                balance: web3.fromWei(web3.eth.getBalance($state.params.account)),
-                codes: ''
-            };
-            let date = new Date();
-
-            date.setTime(data.finishSignupPhase);
-            data.finishSignupPhaseFormatted = clockformat(date);
-
-            date.setTime(data.endSignupPhase);
-            data.endSignupPhaseFormatted = clockformat(date);
-
-            console.log(data);
-
-            $scope.data = data;
-            $scope.register = () => {
-                if (anonymousVoting.register(x, xG, v, w, r, d)) {
-                    notificationsService.success("Successfully registered");
-                    data.registered = anonymousVoting.registered();
-                    data.totalregistered = anonymousVoting.totalregistered();
-                } else {
-                    notificationsService.error(
-                    "Registration failed... Problem could be your voting codes or that you have already registered");
-                }
-            }
-            $scope.onFileSelected = (event) => {
-                var input = event.target;
-                var reader = new FileReader();
-                reader.onload = () => {
-                    var text = reader.result.split("\n");
-                    var row = text[0].split(",");
-                    // We are expecting 7 numbers...
-                    if (row.length == 7) {
-                        x = new BigNumber(row[0]);
-                        xG = [new BigNumber(row[1]), new BigNumber(row[2])];
-                        v = new BigNumber(row[3]);
-                        w = new BigNumber(row[4]);
-                        r = new BigNumber(row[5]);
-                        d = new BigNumber(row[6]);
-                        $scope.data.codes = reader.result;
-                    } else {
-                        notificationsService.error("Problem with uploaded file..." + row.length);
-                    }
-                    $scope.$apply();
-                }
-                reader.readAsText(input.files[0]);
-            };
-
-        }
-    });
 })();

@@ -18,25 +18,25 @@
                 console.error('No Active account set');
                 return;
             }
-            return this.contract.createZKP.call(
-                x, v, xG, { from: this.activeAccount });
+            return this.contract.methods.createZKP(
+                x, v, xG).call({ from: this.activeAccount });
         }
         verifyZKP(xG, zkp, vG) {
             if(!this.activeAccount) {
                 console.error('No Active account set');
                 return;
             }
-            return this.contract.verifyZKP.call(
-                xG, zkp, vG, { from: this.activeAccount });
+            return this.contract.methods.verifyZKP(
+                xG, zkp, vG).call({ from: this.activeAccount });
         }
         create1outof2ZKPYesVote(xG, yG, w, r, d, x) {
-            return this.contract.create1outof2ZKPYesVote.call(
-                xG, yG, w, r, d, x, { from: this.activeAccount }
+            return this.contract.methods.create1outof2ZKPYesVote(
+                xG, yG, w, r, d, x).call({ from: this.activeAccount }
             );
         }
         create1outof2ZKPNoVote(xG, yG, w, r, d, x) {
-            return this.contract.create1outof2ZKPNoVote.call(
-                xG, yG, w, r, d, x, { from: this.activeAccount }
+            return this.contract.methods.create1outof2ZKPNoVote(
+                xG, yG, w, r, d, x).call({ from: this.activeAccount }
             );
         }
     }

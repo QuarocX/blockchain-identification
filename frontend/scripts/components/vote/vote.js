@@ -1,15 +1,9 @@
 (function(){
     window.app.ng.component('vote',{
         templateUrl: '/scripts/components/vote/vote.html',
-        controller: function($scope, $state, anonymousVoting,
+        controller: async function($scope, $state, anonymousVoting,
             notificationsService) {
-            let data = {
-                question: anonymousVoting.question(),
-                state: anonymousVoting.state(),
-                registered: anonymousVoting.registered()
-            };
-            console.log(data);
-            switch (data.state) {
+            switch (await anonymousVoting.state()) {
                 case 1: {
                     $state.go('root.state.vote.signup', null, {
                         location: 'replace'});
