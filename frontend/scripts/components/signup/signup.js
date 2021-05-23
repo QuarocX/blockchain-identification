@@ -2,7 +2,7 @@
     window.app.ng.component('signup',{
         templateUrl: '/scripts/components/signup/signup.html',
         controller: function($scope, $state, anonymousVoting,
-            notificationsService, web3, localCrypto) {
+            notificationsService, web3) {
             var x, xG, v, w, r, d;
 
             let data = {
@@ -18,7 +18,6 @@
                 finishSignupPhase: anonymousVoting.finishSignupPhase()
                     .then((v) => (new Date(v)))
                     .then(clockformat),
-                registered: anonymousVoting.registered(),
                 signupFinished: anonymousVoting.endSignupPhase()
                     .then((val) => ((new Date()).getTime() > val)),
                 balance: web3.eth.getBalance($state.params.account)
@@ -50,8 +49,9 @@
                     $scope.$apply();
                 }, () => {
                     $scope.loading = false;
-                    notificationsservice.error(
-                        "Registration failed... Problem could be your voting codes or that you have already registered");
+                    notificationsService.error(
+                        "Registration failed... Problem could be your voting " +
+                        "codes or you have already registered, or your address is ineligible");
                     $scope.$apply();
                 });
             }
