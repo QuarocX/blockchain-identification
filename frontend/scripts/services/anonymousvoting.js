@@ -18,7 +18,7 @@
                 console.error('No Active account set');
                 return;
             }
-            return this.contract.eligible(this.activeAccount);
+            return this.contract.methods.eligible(this.activeAccount).call();
         }
         question() {
             return this.contract.methods.question().call();

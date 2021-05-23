@@ -1,7 +1,7 @@
 (function(){
     window.app.ng.component('cast',{
         templateUrl: '/scripts/components/cast/cast.html',
-        controller: async function($scope, $state, anonymousVoting,
+        controller: async function($scope, anonymousVoting,
             notificationsService) {
 
             $scope.loading = {

@@ -1,7 +1,7 @@
 (function(){
     window.app.ng.component('result',{
         templateUrl: '/scripts/components/result/result.html',
-        controller: async function($scope, $state, anonymousVoting) {
+        controller: async function($scope, anonymousVoting) {
             $scope.data = {};
             $scope.data.totalregistered =
                 await anonymousVoting.totalregistered(),

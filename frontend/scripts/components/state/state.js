@@ -1,11 +1,12 @@
 (function(){
     window.app.ng.component('state',{
         templateUrl: '/scripts/components/state/state.html',
-        controller: function($scope, $state, web3,
+        controller: function($scope, $state,
         votingController, localCrypto, anonymousVoting) {
             $scope.account = $state.params.account;
             anonymousVoting.question().then((v) => {
                 $scope.question = v;
+                $scope.$apply();
             });
 
             votingController.setActiveAccount($state.params.account);

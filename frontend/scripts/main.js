@@ -5,14 +5,20 @@
         util: {},
         contracts: null
     };
-    window.app.ng = angular.module('votingApp', ['ui.router']);
-    let web3 = new Web3(new Web3.providers.HttpProvider("http://192.168.178.6:7545"));
-    window.app.ng.constant('web3', web3);
+    let angular = window.angular;
+    let Web3 = window.Web3;
+    let app = window.app;
+
+    let web3 = new Web3(//Web3.givenProvider ||
+        new Web3.providers.HttpProvider("http://localhost:8545"));
+
+    app.ng = angular.module('votingApp', ['ui.router']);
+    app.ng.constant('web3', web3);
 
     fetch('/data/manifest.json')
         .then(data => (data.json()))
         .then((contracts) => {
-            window.app.contracts = contracts;
+            app.contracts = contracts;
         }).then(() => {
             angular.element(() => {
                 angular.bootstrap(document, ['votingApp']);
