@@ -14,7 +14,7 @@ module.exports = async function (deployer) {
     // gap: Minimum number of seconds between stages.
     // charity: An ethereum address that will receive the deposits of
     //          participants if they do not participate in the vote.
-    await deployer.deploy(contracts.AnonymousVoting, 60,
+    await deployer.deploy(contracts.AnonymousVoting, 120,
             "0xf9476075c27f7a648dc55cbc42871b39a7b90988");
     await deployer.deploy(contracts.LocalCrypto);
     await deployer.deploy(contracts.IDUnionAuthenticator)
