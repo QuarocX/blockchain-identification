@@ -87,6 +87,18 @@ To get the addresses of the newest versions of the contracts:
 truffle network
 ```
 
+## Export contract information
+
+Setting the environment variable `EXPORT_CONTRACTS` to a path of an existing
+directory will have the migration export the ABI of each deployed contract into
+an own json file inside that directory. A `manifest.json` file will also be
+created containing addresses and ABI file name for each of the deployed
+contract.
+
+```
+EXPORT_CONTRACTS=output/data/ truffle migrate
+```
+
 ## Test
 
 ```
