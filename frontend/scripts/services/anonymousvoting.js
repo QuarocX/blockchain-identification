@@ -64,8 +64,7 @@
         }
         async register(x, xG, v, w, r, d) {
             if(!this.activeAccount) {
-                console.error('No Active account set');
-                return;
+                throw 'No active account set';
             }
 
             let single_zkp = await this.localCrypto.createZKP(x, v, xG);
@@ -79,7 +78,7 @@
 
             let zkp = single_zkp[0];
             let deposit = await this.depositrequired();
-            let verifyRes = await this.contract.methods.register(xG, vG, zkp)
+            verifyres = await this.contract.methods.register(xG, vG, zkp)
                 .call({
                     'from': this.activeAccount,
                     'value': deposit
