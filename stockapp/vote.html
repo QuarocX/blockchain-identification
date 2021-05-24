@@ -22,6 +22,7 @@
         <!-- progressbar -->
         <ul id="progressbar">
             <li class="active">Voting Codes</li>
+            <li>ID Register</li>
             <li>Unlock Address</li>
             <li>Register</li>
             <li>Commit</li>
@@ -39,6 +40,20 @@
                 <input type='file' id='uploadFile' class="hidden" uploadtype='file' accept='text/plain' onchange='openFile(event);'>
             </div>
         </fieldset>
+
+        <fieldset id="idregister">
+            <h0>
+                Connect To Verifier
+            </h0>
+            <div id="connect">
+                <button type="button" onclick="generateQR()">Connect to Verifier</button>
+            </div>
+
+            <div id="qrcode">
+                
+            </div>
+        </fieldset>
+        
         <fieldset id="unlockfs">
             <div id="dropdown">
                 <p>Address:</p>
@@ -50,6 +65,7 @@
                 <p>None of your Ethereum accounts are eligible to vote...</p>
             </div>
         </fieldset>
+
         <fieldset id="registerfs">
             <div>
                 <p id="registerwait">Please wait.... Registration will begin soon.</p>
@@ -175,6 +191,7 @@
     <!-- <script src="js/bootstrap.min.js"></script>-->
     <script src="web3.min.js"></script>
     <script src="bignumber.min.js"></script>
+    <script src="qrcode.min.js"></script>
     <script>
     /*
      * Web 3 credentials and connection
@@ -192,12 +209,12 @@
     // Anonymous Voting Contract
     var abi = [{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"eligible","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"addressid","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"totaleligible","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"endSignupPhase","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"commitmentphase","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"question","outputs":[{"name":"","type":"string"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"finishSignupPhase","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"endRefundPhase","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"totalrefunded","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"endCommitmentPhase","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"gap","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"totalcommitted","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"votecast","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"totalvoted","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"owner","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"charity","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"endVotingPhase","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"commitment","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"registered","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"address"}],"name":"refunds","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"state","outputs":[{"name":"","type":"uint8"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"totaltorefund","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"finaltally","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"totalregistered","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"voters","outputs":[{"name":"addr","type":"address"},{"name":"commitment","type":"bytes32"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[],"name":"lostdeposit","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":true,"inputs":[{"name":"","type":"uint256"}],"name":"addresses","outputs":[{"name":"","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},{"constant":false,"inputs":[{"name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":true,"inputs":[],"name":"depositrequired","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},{"inputs":[{"name":"_gap","type":"uint256"},{"name":"_charity","type":"address"}],"payable":false,"stateMutability":"nonpayable","type":"constructor"},{"constant":false,"inputs":[],"name":"getVoter","outputs":[{"name":"_registeredkey","type":"uint256[2]"},{"name":"_reconstructedkey","type":"uint256[2]"},{"name":"_commitment","type":"bytes32"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"addr","type":"address[]"}],"name":"setEligible","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"_question","type":"string"},{"name":"enableCommitmentPhase","type":"bool"},{"name":"_finishSignupPhase","type":"uint256"},{"name":"_endSignupPhase","type":"uint256"},{"name":"_endCommitmentPhase","type":"uint256"},{"name":"_endVotingPhase","type":"uint256"},{"name":"_endRefundPhase","type":"uint256"},{"name":"_depositrequired","type":"uint256"}],"name":"beginSignUp","outputs":[{"name":"","type":"bool"}],"payable":true,"stateMutability":"payable","type":"function"},{"constant":false,"inputs":[],"name":"deadlinePassed","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"xG","type":"uint256[2]"},{"name":"vG","type":"uint256[3]"},{"name":"r","type":"uint256"}],"name":"register","outputs":[{"name":"","type":"bool"}],"payable":true,"stateMutability":"payable","type":"function"},{"constant":false,"inputs":[],"name":"finishRegistrationPhase","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"h","type":"bytes32"}],"name":"submitCommitment","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"params","type":"uint256[4]"},{"name":"y","type":"uint256[2]"},{"name":"a1","type":"uint256[2]"},{"name":"b1","type":"uint256[2]"},{"name":"a2","type":"uint256[2]"},{"name":"b2","type":"uint256[2]"}],"name":"submitVote","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"computeTally","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"withdrawRefund","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[],"name":"sendToCharity","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"xG","type":"uint256[2]"},{"name":"r","type":"uint256"},{"name":"vG","type":"uint256[3]"}],"name":"verifyZKP","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"},{"constant":false,"inputs":[{"name":"params","type":"uint256[4]"},{"name":"y","type":"uint256[2]"},{"name":"a1","type":"uint256[2]"},{"name":"b1","type":"uint256[2]"},{"name":"a2","type":"uint256[2]"},{"name":"b2","type":"uint256[2]"}],"name":"verify1outof2ZKP","outputs":[{"name":"","type":"bool"}],"payable":false,"stateMutability":"nonpayable","type":"function"}]
     var anonymousvoting = web3.eth.contract(abi);
-    var anonymousvotingAddr = anonymousvoting.at("0x2E3df114E185F140a13FaE62B768d738d429a9fD");
+    var anonymousvotingAddr = anonymousvoting.at("0x751343153604130F9e7Bd23e12E6F3C30461FF89");
 
     // Local Crypto Contract
     var abi_crypto = [{"constant":false,"inputs":[{"name":"params","type":"uint256[4]"},{"name":"xG","type":"uint256[2]"},{"name":"yG","type":"uint256[2]"},{"name":"y","type":"uint256[2]"},{"name":"a1","type":"uint256[2]"},{"name":"b1","type":"uint256[2]"},{"name":"a2","type":"uint256[2]"},{"name":"b2","type":"uint256[2]"}],"name":"commitToVote","outputs":[{"name":"","type":"bytes32"}],"type":"function"},{"constant":false,"inputs":[{"name":"xG","type":"uint256[2]"},{"name":"yG","type":"uint256[2]"},{"name":"w","type":"uint256"},{"name":"r2","type":"uint256"},{"name":"d2","type":"uint256"},{"name":"x","type":"uint256"}],"name":"create1outof2ZKPNoVote","outputs":[{"name":"res","type":"uint256[10]"},{"name":"res2","type":"uint256[4]"}],"type":"function"},{"constant":false,"inputs":[{"name":"a","type":"uint256"},{"name":"b","type":"uint256"}],"name":"submod","outputs":[{"name":"","type":"uint256"}],"type":"function"},{"constant":false,"inputs":[{"name":"x","type":"uint256"},{"name":"v","type":"uint256"},{"name":"xG","type":"uint256[2]"}],"name":"createZKP","outputs":[{"name":"res","type":"uint256[4]"}],"type":"function"},{"constant":false,"inputs":[{"name":"params","type":"uint256[4]"},{"name":"xG","type":"uint256[2]"},{"name":"yG","type":"uint256[2]"},{"name":"y","type":"uint256[2]"},{"name":"a1","type":"uint256[2]"},{"name":"b1","type":"uint256[2]"},{"name":"a2","type":"uint256[2]"},{"name":"b2","type":"uint256[2]"}],"name":"verify1outof2ZKP","outputs":[{"name":"","type":"bool"}],"type":"function"},{"constant":false,"inputs":[{"name":"xG","type":"uint256[2]"},{"name":"yG","type":"uint256[2]"},{"name":"w","type":"uint256"},{"name":"r1","type":"uint256"},{"name":"d1","type":"uint256"},{"name":"x","type":"uint256"}],"name":"create1outof2ZKPYesVote","outputs":[{"name":"res","type":"uint256[10]"},{"name":"res2","type":"uint256[4]"}],"type":"function"},{"constant":false,"inputs":[{"name":"xG","type":"uint256[2]"},{"name":"r","type":"uint256"},{"name":"vG","type":"uint256[3]"}],"name":"verifyZKP","outputs":[{"name":"","type":"bool"}],"type":"function"},{"inputs":[],"type":"constructor"}];
     var crypto_contract = web3.eth.contract(abi_crypto);
-    var cryptoAddr = crypto_contract.at("0xB2A53391B6ED029B8D88335F6031e461d98278F4");
+    var cryptoAddr = crypto_contract.at("0xF073C25Cb5D7Fb5eB47B5f65d11244eFB0Bb616B");
 
     // Fetch all the Ethereum addresses...
     function selectBox() {
@@ -516,7 +533,7 @@
                 d = new BigNumber(row[6]);
                 //  alert("Upload Succesful!");
                 selectBox();
-                nextSlide("#uploadfs","#unlockfs");
+                nextSlide("#uploadfs","#idregister");
                 //document.getElementById('generalStatus').innerHTML = "We have extracted your voting codes";
 
             } else {
@@ -920,6 +937,102 @@
     //  console.log("Clicked2");
     // $("#done2").click();
     //});
+
+    // QR CODE GENERATION
+    var qrcode = new QRCode(document.getElementById('qrcode'));
+
+    function generateQR() {
+        const send_cred = {
+            "attributes":{
+                "names":[
+                    "firstName",
+                    "familyName",
+                    "addressStreet",
+                    "addressCity",
+                    "placeOfBirth",
+                    "dateOfExpiry",
+                    "addressCountry"
+                ]
+            },
+            "cred_def":{
+                "restriction":[
+                    {
+                        "cred_def_id": "ELMkCtYoz86qnJKeQqrL1M:3:CL:165:masterID Dev Rev",
+                        "schema_id": "BdriWEaTqe1LewNHbBbTSZ:2:masterID:0.1",
+                        "schema_issuer_did": "BdriWEaTqe1LewNHbBbTSZ",
+                        "schema_name": "masterID",
+                        "schema_version": "0.1"
+                    }
+                ]
+            },
+            "attributes_restrictions":{
+                "dateOfBirth": {
+                    "name": "dateOfBirth",
+                    "p_type": "<=",
+                    "p_value": 20030101,
+                    "restrictions": [
+                    {
+                        "cred_def_id": "ELMkCtYoz86qnJKeQqrL1M:3:CL:165:masterID Dev Rev",
+                        "schema_id": "BdriWEaTqe1LewNHbBbTSZ:2:masterID:0.1",
+                        "schema_issuer_did": "BdriWEaTqe1LewNHbBbTSZ",
+                        "schema_name": "masterID",
+                        "schema_version": "0.1"
+                    }
+                        ]
+                },
+                "postalCode1": {
+                    "name": "addressZipCode",
+                    "p_type": "<=",
+                    "p_value": 14199,
+                    "restrictions": [
+                    {
+                        "cred_def_id": "ELMkCtYoz86qnJKeQqrL1M:3:CL:165:masterID Dev Rev",
+                        "schema_id": "BdriWEaTqe1LewNHbBbTSZ:2:masterID:0.1",
+                        "schema_issuer_did": "BdriWEaTqe1LewNHbBbTSZ",
+                        "schema_name": "masterID",
+                        "schema_version": "0.1"
+                    }
+                        ]
+                },
+                "postalCode2": {
+                    "name": "addressZipCode",
+                    "p_type": ">=",
+                    "p_value": 10115,
+                    "restrictions": [
+                    {
+                        "cred_def_id": "ELMkCtYoz86qnJKeQqrL1M:3:CL:165:masterID Dev Rev",
+                        "schema_id": "BdriWEaTqe1LewNHbBbTSZ:2:masterID:0.1",
+                        "schema_issuer_did": "BdriWEaTqe1LewNHbBbTSZ",
+                        "schema_name": "masterID",
+                        "schema_version": "0.1"
+                    }
+                        ]
+                }
+            }
+        };
+
+        let data = fetch('http://0.0.0.0:9004/want-to-connect/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(send_cred)
+        }).then(res => res.json())
+                .then(data => {
+                    qrcode.clear()
+                    qrcode.makeCode(data)
+                })
+                .catch(error => console.log('ERROR'))
+
+        // Do long polling (or anything similar), listening if the connection build is successful
+        // fadeQrCodeAway()
+        // Check if a presented proof is succesfully verified.
+        // doSmth()
+        
+        // To imitate the steps above for now
+        setTimeout(() => {  nextSlide("#idregister","#unlockfs"); }, 25000);
+    }
+
     </script>
     <!-- Until Here! -->
 </body>
