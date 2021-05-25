@@ -276,3 +276,48 @@ body {
 	position: absolute;
 	top: 16%;
 }
+
+
+/*QR CODE*/
+#idregister {
+	width: 600px;
+	margin: 50px auto;
+	text-align: center;
+	position: relative;
+	border: 0 none;
+}
+
+#idregister input {
+	padding: 15px;
+	border: 1px solid #ccc;
+	border-radius: 3px;
+	margin-bottom: 10px;
+	width: 100%;
+	box-sizing: border-box;
+	font-family: montserrat;
+	color: #2C3E50;
+	font-size: 13px;
+}
+#idregister .action-button {
+	width: 150px;
+	background: #27AE60;
+	font-weight: bold;
+	color: white;
+	border: 0 none;
+	border-radius: 1px;
+	cursor: pointer;
+	padding: 10px 5px;
+	margin: 10px 5px;
+}
+#idregister .action-button:hover, #idregister .action-button:focus {
+	box-shadow: 0 0 0 2px white, 0 0 0 3px #27AE60;
+}
+
+#qrcode {
+	width: 250px;
+	margin: 50px auto;
+	text-align: center;
+	position: relative;
+	border: 1px solid #ccc;
+	border-radius: 3px;
+}
