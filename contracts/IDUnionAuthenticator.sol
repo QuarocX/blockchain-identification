@@ -45,6 +45,17 @@ contract IDUnionAuthenticator {
         
         emit AuthenticationRequested(requestId);
 
+        // ---- FOR TESTING ONLY ----
+        // directly call the listener
+        //AuthenticationListener listener = AuthenticationListener(msg.sender);
+        //listener.setEligible(addr, true);
+
+        // OR use standard flow
+        //startUserAuthentication(requestId, 0);
+        //connectionEstablished(requestId);
+        //setAuthenticationResult(requestId, true);
+        // ---- END TESTING ----
+
         return requestId;
     }
 
