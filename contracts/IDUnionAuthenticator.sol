@@ -1,4 +1,5 @@
 pragma solidity ^0.4.3;
+import "./AuthenticationListener.sol";
 
 contract IDUnionAuthenticator {
 
@@ -14,7 +15,8 @@ contract IDUnionAuthenticator {
     struct AuthenticationRequest {
         address addr;
         uint256 id;
-        uint256 connectionId; // 0 if currently created
+        uint256 connectionId; // external; 0, if currently created
+        address sender; // e.g. votingcontroller
         AuthenticationRequestStatus status;
     }
 
@@ -37,7 +39,7 @@ contract IDUnionAuthenticator {
     public returns (uint256) {
         uint256 requestId = nextRequestId++;
         requestsLookup[requestId] = AuthenticationRequest(
-           addr, requestId, 0, AuthenticationRequestStatus.Created);
+           addr, requestId, 0, msg.sender, AuthenticationRequestStatus.Created);
            
         requestsReverseLookup[addr] = requestId;
         
@@ -85,6 +87,10 @@ contract IDUnionAuthenticator {
         } else {
             request.status = AuthenticationRequestStatus.Failure;
         }
+
+        // notify sender
+        AuthenticationListener listener = AuthenticationListener(request.sender);
+        listener.setEligible(request.addr, result);
 
         emit AuthenticationResultReady(requestId);
     }
