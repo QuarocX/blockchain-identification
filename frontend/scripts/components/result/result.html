@@ -1,0 +1,20 @@
+<div class="jumbotron mt-3 pt-4 pb-4">
+    <button type="button" class="btn btn-success btn-lg mr-3" disabled>
+        Yes <span class="badge badge-light">{{ data.yes }}</span>
+    </button>
+    <button type="button" class="btn btn-danger btn-lg" disabled>
+        No <span class="badge badge-light">{{ data.no }}</span>
+    </button>
+
+    <h1 ng-if="data.yes > data.no" class="display-4 mt-3">
+        It's a Yes!</h1>
+    <h1 ng-if="data.yes < data.no" class="display-4 mt-3">
+        It's a No!</h1>
+    <h1 ng-if="data.yes == data.no" class="display-4 mt-3">
+        It's a Tie!</h1>
+
+    <p class="lead">This election has ended and can no longer be modified.
+    The results can be observed above.</p>
+    <hr class="my-4">
+    <p>Thank you participating!</p>
+</div>

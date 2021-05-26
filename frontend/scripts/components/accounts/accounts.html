@@ -1,0 +1,9 @@
+<div class="py-5 text-center">
+	<img class="d-block mx-auto mb-4" src="https://getbootstrap.com/docs/4.0/assets/brand/bootstrap-solid.svg" alt="" width="72" height="72">
+	<h2>Tempelhofer Feld Voting</h2>
+	<p class="lead">Please choose an account to proceed with</p>
+	<select ng-change="onSelected()" ng-model="account" class="custom-select d-block w-100">
+	  <option value="0">Select account</option>
+	  <option ng-repeat="account in accounts" value="{{account}}">{{account}}</option>
+	</select>
+</div>

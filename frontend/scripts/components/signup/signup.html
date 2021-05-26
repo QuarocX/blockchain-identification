@@ -1,0 +1,40 @@
+<div>
+    <div ng-if="!data.signupFinished">
+        <div ng-if="data.registered">
+            <p>You have already registered.</p>
+        </div>
+
+        <form ng-if="!data.registered">
+            <p> Registration requires {{data.depositrequired}} ETH deposit. You have {{data.balance}} ether.</p>
+            <div class="form-group mb-2">
+                <textarea class="form-control"
+                          id="exampleFormControlTextarea1"
+                          rows="3" disabled>{{data.codes}}</textarea>
+            </div>
+            <div class="custom-file mb-2">
+                <input id="customFile" type="file" class="custom-file-input"
+                    onchange="angular.element(this).scope().onFileSelected(event)">
+                <label class="custom-file-label"
+                       for="customFile">Select voters.txt</label>
+            </div>
+            <button ng-click="register()" class="w-100 btn btn-primary btn-lg mb-3"
+                type="submit" ng-disabled="!data.codes || loading">
+                <span ng-show="loading" class="spinner-border spinner-border-sm" role="status"
+                    aria-hidden="true"></span>
+                <span ng-show="!loading">Register</span>
+            </button>
+        </form>
+        <div class="text-left">
+            <small class="text-muted">
+            {{data.totalregistered}}/{{data.totaleligible}} voters have registered. <br />
+            Register your ballot before {{data.finishSignupPhase}} <br />
+            All deposits are refunded after {{data.endSignupPhase}} if the sign up
+            phase does not finish.</br >
+            </small>
+        </div>
+    </div>
+    <div ng-if="data.signupFinished">
+        Registration is closed.
+        You did not register to vote. No deposit to return.
+    </div>
+</div>
