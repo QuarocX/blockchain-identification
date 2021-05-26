@@ -19,7 +19,7 @@ module.exports = async function (deployer) {
     await deployer.deploy(contracts.LocalCrypto);
     await deployer.deploy(contracts.IDUnionAuthenticator)
     await deployer.deploy(contracts.VotingController,
-        contracts.AnonymousVoting.address);
+        contracts.AnonymousVoting.address, contracts.IDUnionAuthenticator.address);
 
     let deployedContract = await contracts.AnonymousVoting.deployed();
     await deployedContract.transferOwnership(contracts.VotingController.address);
