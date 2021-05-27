@@ -48,7 +48,7 @@ contract IDUnionAuthenticator {
         // ---- FOR TESTING ONLY ----
         // directly call the listener
         //AuthenticationListener listener = AuthenticationListener(msg.sender);
-        //listener.setEligible(addr, true);
+        //listener.onAuthenticationComplete(addr, true);
 
         // OR use standard flow
         //startUserAuthentication(requestId, 0);
@@ -101,7 +101,7 @@ contract IDUnionAuthenticator {
 
         // notify sender
         AuthenticationListener listener = AuthenticationListener(request.sender);
-        listener.setEligible(request.addr, result);
+        listener.onAuthenticationComplete(request.addr, result);
 
         emit AuthenticationResultReady(requestId);
     }

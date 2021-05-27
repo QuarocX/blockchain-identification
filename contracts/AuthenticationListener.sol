@@ -1,3 +1,3 @@
 interface AuthenticationListener {
-    function setEligible(address addr, bool result);
+    function onAuthenticationComplete(address addr, bool result);
 }

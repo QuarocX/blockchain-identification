@@ -28,7 +28,7 @@ contract VotingController is AnonymousVotingProxy, AuthenticationListener {
         return authenticationController.requestAuthentication(_sender);
     }
 
-    function setEligible(address addr, bool result) {
+    function onAuthenticationComplete(address addr, bool result) {
         if(!result || eligible[addr]) {
             return;
         }
