@@ -2,30 +2,40 @@ pragma solidity ^0.4.3;
 
 import "./AnonymousVoting.sol";
 import "./AnonymousVotingProxy.sol";
+import "./AuthenticationListener.sol";
+import "./IDUnionAuthenticator.sol";
 
-contract VotingController is AnonymousVotingProxy {
-    constructor(address _anonVotingAddr) AnonymousVotingProxy(_anonVotingAddr)
-    public
-    {}
+contract VotingController is AnonymousVotingProxy, AuthenticationListener {
+    
+    IDUnionAuthenticator authenticationController;
 
-    /* 
-    list of addresses allowed to vote
-    TODO: Think about how we will add new eligible voters
-    */
+    constructor(address _anonVotingAddr, address _authenticatorAddr) AnonymousVotingProxy(_anonVotingAddr) public {
+        authenticationController = IDUnionAuthenticator(_authenticatorAddr);
+    }
+
+    // list of addresses allowed to vote
     address[] public addresses; // use this for iterating and sending all addresses
     mapping (address => bool) public eligible; // for efficient checking
     bool public openPreRegistration = true;
 
-    function preRegister() {
+    function preRegister() public returns (uint256) {
         require(addresses.length <= 40, "Maximum of voters reached");
         require(openPreRegistration, "pre-registration phase has ended");
         address _sender = msg.sender;
         require(!eligible[_sender], "this address already is eligible for voting");
-        // TODO: do some additional checks and call authentication contract
+        
+        // call authentication contract and return requestId
+        return authenticationController.requestAuthentication(_sender);
+    }
+
+    function onAuthenticationComplete(address addr, bool result) {
+        if(!result || eligible[addr]) {
+            return;
+        }
 
         // on success: add this address as eligible voter
-        eligible[_sender] = true;
-        addresses.push(_sender);
+        eligible[addr] = true;
+        addresses.push(addr);
     }
 
     /*
@@ -39,6 +49,13 @@ contract VotingController is AnonymousVotingProxy {
         require(openPreRegistration, "pre-registration already ended");
         anonVoting.setEligible(addresses);
         openPreRegistration = false;
+    }
+
+    /*
+    Allow the voting administrator to change the used authentication contract.
+    */
+    function setAuthenticationContract(address _authenticatorAddr) onlyOwner public {
+        authenticationController = IDUnionAuthenticator(_authenticatorAddr);
     }
 
     function getPreRegisteredVoterCount() view returns (uint) {
