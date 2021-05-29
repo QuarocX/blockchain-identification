@@ -17,7 +17,6 @@ individual through interactions with IDUnion's hyperledger.
 ## Environment Setup
 
 Install truffle globally to be able to have truffle binary in PATH
-
 ```
 npm install -g truffle
 ```
@@ -107,8 +106,35 @@ TODO
 
 ## Run
 
+With your local blockchain network running, you can interact with the contracts
+with the provided frontends as follows:
+
+### Administrative frontend (stockapp)
+
+Make sure to update the addresses as described above then just open
+`stockapp/admin.html` in your browser.
+
+### Voting frontend
+
+Make sure to export contract information first into `frontend/data`:
+
+```sh
+EXPORT_CONTRACTS=frontend/data truffle migrate  # in repo root
 ```
-TODO
+
+Then start a webserver with `frontend` as the served directory.
+
+```sh
+# using npm: run in repo root `npm install` once, then:
+npx serve frontend
 ```
+or
+
+```sh
+# using python inside the frontend dir
+cd frontend
+python3 -m http.server
+```
+
 
 
