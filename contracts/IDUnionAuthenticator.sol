@@ -1,4 +1,5 @@
 pragma solidity ^0.4.3;
+pragma experimental ABIEncoderV2;
 import "./AuthenticationListener.sol";
 
 contract IDUnionAuthenticator {
@@ -14,23 +15,27 @@ contract IDUnionAuthenticator {
 
     struct AuthenticationRequest {
         address addr;
-        uint256 id;
-        uint256 connectionId; // external; 0, if currently created
+        string connectionId;
         address sender; // e.g. votingcontroller
         AuthenticationRequestStatus status;
+        string connectionUrl;
     }
 
     // listen to this event in the verifier
-    event AuthenticationRequested(uint256 requestId);
+    event AuthenticationRequested(uint256 requestId, address addr, string credentials);
     // events used in the user frontend
-    event UserAuthenticationRequired(uint256 requestId);
-    event AuthenticationConnectionEstablished(uint256 requestId);
-    event AuthenticationResultReady(uint256 requestId);
+    event UserAuthenticationRequired(string connectionId);
+    event AuthenticationConnectionEstablished(string connectionId);
+    event AuthenticationResultReady(string connectionId);
 
-    mapping (uint256 => AuthenticationRequest) public requestsLookup;
-    mapping (address => uint256) public requestsReverseLookup;
- 
+    mapping (string => AuthenticationRequest) private requestsLookup;
+    mapping (address => string) public requestsReverseLookup;
+    mapping (uint256 => address) private requestToSenderLookup;
+
+    string[] public connectionIds;
     uint256 private nextRequestId = 1;
+
+    string private credentials = '{"attributes":{"names":["firstName","familyName","addressStreet","addressCity","placeOfBirth","dateOfExpiry","addressCountry"]},"cred_def":{"restriction":[{"cred_def_id":"ELMkCtYoz86qnJKeQqrL1M:3:CL:165:masterID Dev Rev","schema_id":"BdriWEaTqe1LewNHbBbTSZ:2:masterID:0.1","schema_issuer_did":"BdriWEaTqe1LewNHbBbTSZ","schema_name":"masterID","schema_version":"0.1"}]},"attributes_restrictions":{"dateOfBirth":{"name":"dateOfBirth","p_type":"<=","p_value":20030101,"restrictions":[{"cred_def_id":"ELMkCtYoz86qnJKeQqrL1M:3:CL:165:masterID Dev Rev","schema_id":"BdriWEaTqe1LewNHbBbTSZ:2:masterID:0.1","schema_issuer_did":"BdriWEaTqe1LewNHbBbTSZ","schema_name":"masterID","schema_version":"0.1"}]},"postalCode1":{"name":"addressZipCode","p_type":"<=","p_value":14199,"restrictions":[{"cred_def_id":"ELMkCtYoz86qnJKeQqrL1M:3:CL:165:masterID Dev Rev","schema_id":"BdriWEaTqe1LewNHbBbTSZ:2:masterID:0.1","schema_issuer_did":"BdriWEaTqe1LewNHbBbTSZ","schema_name":"masterID","schema_version":"0.1"}]},"postalCode2":{"name":"addressZipCode","p_type":">=","p_value":10115,"restrictions":[{"cred_def_id":"ELMkCtYoz86qnJKeQqrL1M:3:CL:165:masterID Dev Rev","schema_id":"BdriWEaTqe1LewNHbBbTSZ:2:masterID:0.1","schema_issuer_did":"BdriWEaTqe1LewNHbBbTSZ","schema_name":"masterID","schema_version":"0.1"}]}}}';
 
     /*
     STEP 1: Request authentication for a specific ethereum address
@@ -38,12 +43,9 @@ contract IDUnionAuthenticator {
     function requestAuthentication(address addr)
     public returns (uint256) {
         uint256 requestId = nextRequestId++;
-        requestsLookup[requestId] = AuthenticationRequest(
-           addr, requestId, 0, msg.sender, AuthenticationRequestStatus.Created);
-           
-        requestsReverseLookup[addr] = requestId;
-        
-        emit AuthenticationRequested(requestId);
+        requestToSenderLookup[requestId] = msg.sender;
+
+        emit AuthenticationRequested(requestId, addr, credentials);
 
         // ---- FOR TESTING ONLY ----
         // directly call the listener
@@ -62,25 +64,34 @@ contract IDUnionAuthenticator {
     /*
     STEP 2: Get authentication URL/connection ID for QR-Code generation
     */
-    function startUserAuthentication(uint256 requestId, uint256 connectionId) public {
-        AuthenticationRequest request = requestsLookup[requestId];
-        request.status = AuthenticationRequestStatus.Waiting;
-        request.connectionId = connectionId;
-
-        emit UserAuthenticationRequired(requestId);
+    function startUserAuthentication(uint256 requestId,
+                                     address addr,
+                                     string connectionId,
+                                     string connectionUrl) public {
+        requestsLookup[connectionId] =
+            AuthenticationRequest(
+                addr,
+                connectionId,
+                requestToSenderLookup[requestId],
+                AuthenticationRequestStatus.Waiting,
+                connectionUrl
+            );
+        requestsReverseLookup[addr] = connectionId;
+        connectionIds.push(connectionId);
+        emit UserAuthenticationRequired(connectionId);
     }
 
     /*
     STEP 3: Verifier notifies contract that connection has been established
     */
-    function connectionEstablished(uint256 requestId) public {
-        AuthenticationRequest request = requestsLookup[requestId];
+    function connectionEstablished(string connectionId) public {
+        AuthenticationRequest request = requestsLookup[connectionId];
         require(request.status == AuthenticationRequestStatus.Waiting, 
-                "requestId ist not waiting to establish a connection");
-        
+                "connectionId ist not waiting to establish a connection");
+
         request.status =  AuthenticationRequestStatus.Connected;
 
-        emit AuthenticationConnectionEstablished(requestId);
+        emit AuthenticationConnectionEstablished(connectionId);
     }
 
     /*
@@ -88,8 +99,8 @@ contract IDUnionAuthenticator {
 
     result: authentication was succesful AND voter is eligible
     */
-    function setAuthenticationResult(uint256 requestId, bool result) public {
-        AuthenticationRequest request = requestsLookup[requestId];
+    function setAuthenticationResult(string connectionId, bool result) public {
+        AuthenticationRequest request = requestsLookup[connectionId];
         require(request.status == AuthenticationRequestStatus.Connected,
                 "requestId is not pending auth");
 
@@ -103,12 +114,22 @@ contract IDUnionAuthenticator {
         AuthenticationListener listener = AuthenticationListener(request.sender);
         listener.onAuthenticationComplete(request.addr, result);
 
-        emit AuthenticationResultReady(requestId);
+        emit AuthenticationResultReady(connectionId);
     }
 
-    function authenticationRequestStatus(uint256 requestId)
+    function getAuthenticationRequest(string connectionId)
+    public view returns (AuthenticationRequest) {
+        return requestsLookup[connectionId];
+    }
+
+    function getNumberOfConnections()
+    public view returns (uint256) {
+        return connectionIds.length;
+    }
+
+    function authenticationRequestStatus(string connectionId)
     public view returns (AuthenticationRequestStatus) {
-        return requestsLookup[requestId].status;
+        return requestsLookup[connectionId].status;
     }
 
     function authenticationRequestStatus(address addr)
