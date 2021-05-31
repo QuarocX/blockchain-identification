@@ -276,3 +276,12 @@ body {
 	position: absolute;
 	top: 16%;
 }
+
+#qrcode {
+	width: 250px;
+	margin: 50px auto;
+	text-align: center;
+	position: relative;
+	border: 1px solid #ccc;
+	border-radius: 3px;
+}
