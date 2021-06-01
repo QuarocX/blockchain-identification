@@ -1,0 +1,25 @@
+<div>
+	Incoming requests:
+	<table id="abc" class="table table-hover table-striped table-bordered table-sm" cellspacing="0" width="100%">
+	  <thead>
+		<tr>
+		  <th scope="col">addr</th>
+		  <th scope="col">connectionId</th>
+		  <th scope="col">connectionUrl</th>
+		  <th scope="col">status</th>
+		</tr>
+	  </thead>
+	  <tbody>
+		<tr ng-repeat="request in requests">
+		  <td>{{request.addr}}</td>
+		  <td>{{request.connectionId}}</td>
+          <td>
+              <qrcode ng-if="request.connectionUrl"
+                width="300" height="300" data="request.connectionUrl"></qrcode>
+              <div ng-if="!request.connectionUrl">N/A</div>
+          </td>
+          <td>{{request.status}}</td>
+		</tr>
+	  </tbody>
+	</table>
+</div>
