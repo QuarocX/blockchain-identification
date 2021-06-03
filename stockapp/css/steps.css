@@ -277,11 +277,19 @@ body {
 	top: 16%;
 }
 
-#qrcode {
-	width: 250px;
+#qrcodeBackground {
+	width: 300px;
+    height: 300px;
 	margin: 50px auto;
-	text-align: center;
 	position: relative;
 	border: 1px solid #ccc;
+    background-color: white;
 	border-radius: 3px;
+}
+
+#qrcode {
+    width: 250px;
+    height: auto;
+    margin: auto;
+    padding: 20px;
 }
