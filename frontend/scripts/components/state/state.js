@@ -12,7 +12,14 @@
             votingController.setActiveAccount($state.params.account);
             localCrypto.setActiveAccount($state.params.account);
             anonymousVoting.setActiveAccount($state.params.account);
-            $state.go('root.state.vote', null, { location: 'replace' });
+
+            votingController.isPreRegistered().then(preRegistered => {
+                if (preRegistered) {
+                    $state.go('root.state.vote', null, { location: 'replace' });
+                } else {
+                    $state.go('root.state.preregister', null, { location: 'replace' });
+                }
+            })
         }
     });
 })();

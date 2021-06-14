@@ -13,16 +13,18 @@
 		setActiveAccount(account) {
 			this.activeAccount = account;
 		}
-		preRegister() {
-			return this.contract.preRegister.sendTransaction({
-				from: this.activeAccount
-			});
+		async preRegister() {
+			return this.contract.methods.preRegister().send({
+				from: this.activeAccount, 
+                gas: 4200000
+			})
 		}
 		getPreRegisteredVoterCount() {
 			return this.contract.getPreRegisteredVoterCount().toNumber();
 		}
-        isPreRegistered() {
-			return this.contract.isPreRegistered();
+        async isPreRegistered() {
+            let result = await this.contract.methods.isPreRegistered().call()
+			return result;
         }
     }
 
