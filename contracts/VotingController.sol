@@ -61,4 +61,8 @@ contract VotingController is AnonymousVotingProxy, AuthenticationListener {
     function getPreRegisteredVoterCount() view returns (uint) {
         return addresses.length;
     }
+
+    function isPreRegistered() view returns (bool) {
+        return eligible[msg.sender];
+    }
 }
