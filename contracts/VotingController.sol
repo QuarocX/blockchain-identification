@@ -18,14 +18,14 @@ contract VotingController is AnonymousVotingProxy, AuthenticationListener {
     mapping (address => bool) public eligible; // for efficient checking
     bool public openPreRegistration = true;
 
-    function preRegister() public returns (uint256) {
+    function preRegister() public {
         require(addresses.length <= 40, "Maximum of voters reached");
         require(openPreRegistration, "pre-registration phase has ended");
         address _sender = msg.sender;
         require(!eligible[_sender], "this address already is eligible for voting");
         
         // call authentication contract and return requestId
-        return authenticationController.requestAuthentication(_sender);
+        authenticationController.requestAuthentication(_sender);
     }
 
     function onAuthenticationComplete(address addr, bool result) {

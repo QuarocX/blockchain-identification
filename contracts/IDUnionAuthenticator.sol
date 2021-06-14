@@ -24,7 +24,7 @@ contract IDUnionAuthenticator {
     // listen to this event in the verifier
     event AuthenticationRequested(uint256 requestId, address addr, string credentials);
     // events used in the user frontend
-    event UserAuthenticationRequired(string connectionId);
+    event UserAuthenticationRequired(address addr, string connectionId);
     event AuthenticationConnectionEstablished(string connectionId);
     event AuthenticationResultReady(string connectionId);
 
@@ -40,8 +40,7 @@ contract IDUnionAuthenticator {
     /*
     STEP 1: Request authentication for a specific ethereum address
     */
-    function requestAuthentication(address addr)
-    public returns (uint256) {
+    function requestAuthentication(address addr) public {
         uint256 requestId = nextRequestId++;
         requestToSenderLookup[requestId] = msg.sender;
 
@@ -57,8 +56,6 @@ contract IDUnionAuthenticator {
         //connectionEstablished(requestId);
         //setAuthenticationResult(requestId, true);
         // ---- END TESTING ----
-
-        return requestId;
     }
 
     /*
@@ -78,7 +75,7 @@ contract IDUnionAuthenticator {
             );
         requestsReverseLookup[addr] = connectionId;
         connectionIds.push(connectionId);
-        emit UserAuthenticationRequired(connectionId);
+        emit UserAuthenticationRequired(addr, connectionId);
     }
 
     /*
