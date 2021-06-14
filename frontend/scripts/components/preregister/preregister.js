@@ -24,9 +24,14 @@
                         console.error(err);
                         return;
                     }
-                    // TODO check for correct connectionID
-                    await updateRequest(ev.connectionId);
-                    $scope.$apply();
+
+                    // check if this request is our own
+                    if(ev.addr == $state.params.account) {
+                        $scope.connectionId = ev.connectionId;
+                        await updateRequest(ev.connectionId);
+                        $scope.$apply();
+                    }
+                    
             });
 
             idUnionAuthenticator.on('AuthenticationConnectionEstablished',
@@ -35,9 +40,11 @@
                         console.error(err);
                         return;
                     }
-                    // TODO check for correct connectionID
-                    await updateRequest(ev.connectionId);
-                    $scope.$apply();
+                   
+                    if($scope.connectionId == ev.connectionId) {
+                        await updateRequest(ev.connectionId);
+                        $scope.$apply();
+                    }
             });
 
             idUnionAuthenticator.on('AuthenticationResultReady',
@@ -46,7 +53,11 @@
                         console.error(err);
                         return;
                     }
-                    // TODO check for correct connectionID
+
+                    if($scope.connectionId != ev.connectionId) {
+                        return
+                    }
+
                     await updateRequest(ev.connectionId);
                     $scope.$apply();
 
