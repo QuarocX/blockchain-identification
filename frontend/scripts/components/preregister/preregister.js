@@ -64,8 +64,10 @@
                         if (preRegistered) {
                             $state.go('root.state.vote', null, { location: 'replace' });
                         } else {
-                            // TODO: let user generate new qr code
                             notificationsService.error("Something went wrong");
+                            // clear request and allow to retry
+                            $scope.request = undefined;
+                            $scope.$apply();
                         }
                     })
             });
