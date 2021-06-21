@@ -24,7 +24,7 @@ contract VotingController is AnonymousVotingProxy, AuthenticationListener {
         address _sender = msg.sender;
         require(!eligible[_sender], "this address already is eligible for voting");
         
-        // call authentication contract and return requestId
+        // call authentication contract
         authenticationController.requestAuthentication(_sender);
     }
 

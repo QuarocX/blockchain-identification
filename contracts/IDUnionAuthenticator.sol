@@ -84,7 +84,7 @@ contract IDUnionAuthenticator {
     function connectionEstablished(string connectionId) public {
         AuthenticationRequest request = requestsLookup[connectionId];
         require(request.status == AuthenticationRequestStatus.Waiting, 
-                "connectionId ist not waiting to establish a connection");
+                "connectionId is not waiting to establish a connection");
 
         request.status =  AuthenticationRequestStatus.Connected;
 
