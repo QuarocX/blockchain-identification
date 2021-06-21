@@ -23,8 +23,7 @@
 			return this.contract.getPreRegisteredVoterCount().toNumber();
 		}
         async isPreRegistered() {
-            let result = await this.contract.methods.isPreRegistered().call()
-			return result;
+            return this.contract.methods.isPreRegistered().call()
         }
     }
 

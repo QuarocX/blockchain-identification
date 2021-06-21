@@ -16,6 +16,7 @@
                     .getRequestByConnectionId(connectionId);
 
                 $scope.request = request;
+                $scope.$apply();
             }
 
             idUnionAuthenticator.on('UserAuthenticationRequired',
@@ -29,7 +30,6 @@
                     if(ev.addr == $state.params.account) {
                         $scope.connectionId = ev.connectionId;
                         await updateRequest(ev.connectionId);
-                        $scope.$apply();
                     }
                     
             });
@@ -43,7 +43,6 @@
                    
                     if($scope.connectionId == ev.connectionId) {
                         await updateRequest(ev.connectionId);
-                        $scope.$apply();
                     }
             });
 
@@ -59,7 +58,6 @@
                     }
 
                     await updateRequest(ev.connectionId);
-                    $scope.$apply();
 
                     // check if user is pre-registered now
                     votingController.isPreRegistered().then(preRegistered => {
