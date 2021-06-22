@@ -137,4 +137,10 @@ python3 -m http.server
 ```
 
 
+##Troubleshooting:
+When ´truffle-migrate´ is failing and Ethereum client can't be conencted
+with: Try changing the Port inside the 'truffle-config.js' file to the same port 
+'truffle develop' showed in the console output
+
+
 
