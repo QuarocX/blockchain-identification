@@ -47,7 +47,7 @@ contract IDUnionAuthenticator is owned {
     modifier onlyUser(string connectionId) {
         AuthenticationRequest request = requestsLookup[connectionId];
         require(msg.sender == request.addr,
-         "This functiion must be called by the user who is being authenticated.");
+         "This function must be called by the user who is being authenticated.");
         _;
     }
 
@@ -66,7 +66,7 @@ contract IDUnionAuthenticator is owned {
         //AuthenticationListener listener = AuthenticationListener(msg.sender);
         //listener.onAuthenticationComplete(addr, true);
 
-        // OR use standard flow [then uncomment "onlyOwner" in called functions]
+        // OR use standard flow [then remove "onlyOwner" in called functions]
         //startUserAuthentication(requestId, 0);
         //connectionEstablished(requestId);
         //setAuthenticationResult(requestId, true);
@@ -80,8 +80,8 @@ contract IDUnionAuthenticator is owned {
                                      address addr,
                                      string connectionId,
                                      string connectionUrl) public {
-        //require(msg.sender == addr,
-         //"This functiion must be called by the user who is being authenticated.");
+        require(msg.sender == addr,
+         "This function must be called by the user who is being authenticated.");
 
         requestsLookup[connectionId] =
             AuthenticationRequest(
@@ -125,7 +125,7 @@ contract IDUnionAuthenticator is owned {
         emit ReVerificationRequired(connectionId);
 
         // ---- FOR TESTING ONLY ----
-        // [then uncomment "onlyOwner" in called function]
+        // [then remove "onlyOwner" in called function]
         // validateAuthenticationResult(connectionId, result);
         // ---- END TESTING ----
     }
