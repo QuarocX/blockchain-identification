@@ -34,6 +34,17 @@
                     
             });
 
+            idUnionAuthenticator.on('ReVerificationRequired', async(err, ev) => {
+                if (err) {
+                    console.error(err);
+                    return;
+                }
+               
+                if($scope.connectionId == ev.connectionId) {
+                    await updateRequest(ev.connectionId);
+                }
+            });
+
             idUnionAuthenticator.on('AuthenticationConnectionEstablished',
                 async(err, ev) => {
                     if (err) {
