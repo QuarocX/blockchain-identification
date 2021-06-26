@@ -29,7 +29,9 @@ contract IDUnionAuthenticator is owned {
     event AuthenticationConnectionEstablished(string connectionId);
     event AuthenticationResultReady(string connectionId);
     // listen to this event in the verifier (admin side)
-    event ReVerificationRequired(string connectionId);
+    event ReVerificationRequired(string connectionId, string proof);
+
+    mapping (string => string) private connectionIdToProof;
 
     mapping (string => AuthenticationRequest) private requestsLookup;
     mapping (address => string) public requestsReverseLookup;
@@ -113,16 +115,15 @@ contract IDUnionAuthenticator is owned {
     STEP 4: Set authentication result for the given connectionId. 
     Containing a proof which can be re-validated by the admin in STEP 5.
     */
-    function setAuthenticationResult(string connectionId, bool result) onlyUser(connectionId) public {
+    function setAuthenticationResult(string connectionId, string proof) onlyUser(connectionId) public {
         AuthenticationRequest request = requestsLookup[connectionId];
         require(request.status == AuthenticationRequestStatus.Connected,
                 "requestId is not pending auth");
 
         request.status = AuthenticationRequestStatus.Validating;
 
-        // TODO: store proof
-
-        emit ReVerificationRequired(connectionId);
+        connectionIdToProof[connectionId] = proof;
+        emit ReVerificationRequired(connectionId, proof);
 
         // ---- FOR TESTING ONLY ----
         // [then remove "onlyOwner" in called function]
@@ -155,9 +156,21 @@ contract IDUnionAuthenticator is owned {
         emit AuthenticationResultReady(connectionId);
     }
 
+     /*
+     Observers can call this function to get the stored proof of a specific connectionId and re-verify it.
+     */
+    function getProof(string connectionId) public view returns (string) {
+        return connectionIdToProof[connectionId];
+    }
+
     function getAuthenticationRequest(string connectionId)
     public view returns (AuthenticationRequest) {
         return requestsLookup[connectionId];
+    }
+
+    function getLatestAuthenticationRequest(address addr)
+    public view returns (AuthenticationRequest) {
+        return requestsLookup[requestsReverseLookup[addr]];
     }
 
     function getNumberOfConnections()
@@ -168,10 +181,5 @@ contract IDUnionAuthenticator is owned {
     function authenticationRequestStatus(string connectionId)
     public view returns (AuthenticationRequestStatus) {
         return requestsLookup[connectionId].status;
-    }
-
-    function authenticationRequestStatus(address addr)
-    public view returns (AuthenticationRequestStatus) {
-        return requestsLookup[requestsReverseLookup[addr]].status;
     }
 }
