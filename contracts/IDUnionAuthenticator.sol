@@ -1,15 +1,14 @@
 pragma solidity ^0.4.3;
 pragma experimental ABIEncoderV2;
 import "./AuthenticationListener.sol";
-import "./AnonymousVoting.sol";
 
-contract IDUnionAuthenticator is owned {
+contract IDUnionAuthenticator {
 
     enum AuthenticationRequestStatus {
         NotValid,
         Waiting, // waiting for user authentication
         Connected, // user connected to verifier
-        Validating, // admin needs to validate that proof is correct
+        Validating, // request sender needs to validate that proof is correct
         Failure,
         Success
     }
@@ -130,16 +129,18 @@ contract IDUnionAuthenticator is owned {
     }
 
     /*
-    STEP 5: the voting admin/initiator needs to verify that voter is eligible.
-    We want at least one automated trusted check (by voting admin) so that a voter can not add himself.
+    STEP 5:
+    We want at least one automated trusted check so that a user can not add himself.
+    This check needs to be performed by the smart contract which initially requested the authentication.
+    (e.g. VotingController)
     
     Any observer is also able to check and re-verify this proof.
-
     */
-    function validateAuthenticationResult(string connectionId, bool result) onlyOwner public {
+    function validateAuthenticationResult(string connectionId, bool result) public {
         AuthenticationRequest request = requestsLookup[connectionId];
         require(request.status == AuthenticationRequestStatus.Validating,
                 "requestId is not pending auth");
+        require(request.sender == msg.sender, "only the request owner can validate the authentication");
 
         if (result) {
             request.status = AuthenticationRequestStatus.Success;
