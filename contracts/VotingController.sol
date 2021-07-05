@@ -9,6 +9,9 @@ contract VotingController is AnonymousVotingProxy, AuthenticationListener {
     
     IDUnionAuthenticator authenticationController;
 
+    // listen to this event in the verifier (admin side)
+    event ReVerificationRequired(string connectionId);
+
     constructor(address _anonVotingAddr, address _authenticatorAddr) AnonymousVotingProxy(_anonVotingAddr) public {
         authenticationController = IDUnionAuthenticator(_authenticatorAddr);
     }
@@ -33,6 +36,21 @@ contract VotingController is AnonymousVotingProxy, AuthenticationListener {
         
         // call authentication contract
         authenticationController.requestAuthentication(_sender);
+    }
+
+    function onReVerificationRequired(string connectionId) {
+        require(msg.sender == address(authenticationController), 
+            "only the authentication controller is allowed to ask for validation");
+
+        /* Currently this validation is done manually (STEP 5).
+           Alternatively, this would be the place to re-verify the proof automatically.
+         */
+
+         emit ReVerificationRequired(connectionId);
+    }
+
+    function validateAuthenticationResult(string connectionId, bool result) onlyOwner public {
+        authenticationController.validateAuthenticationResult(connectionId, result);
     }
 
     /*
