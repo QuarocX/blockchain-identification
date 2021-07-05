@@ -25,6 +25,15 @@
         async isPreRegistered() {
             return this.contract.methods.isPreRegistered().call()
         }
+        on(eventName, callback) {
+            this.contract.events[eventName](null, (err, ev) => {
+                if (err) {
+                    callback(err, ev);
+                } else {
+                    callback(null, ev.returnValues);
+                }
+            });
+        }
     }
 
     window.app.ng.provider('votingController', function() {

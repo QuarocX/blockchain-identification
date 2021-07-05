@@ -34,7 +34,7 @@
                     
             });
 
-            idUnionAuthenticator.on('ReVerificationRequired', async(err, ev) => {
+            votingController.on('ReVerificationRequired', async(err, ev) => {
                 if (err) {
                     console.error(err);
                     return;
