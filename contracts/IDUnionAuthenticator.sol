@@ -75,13 +75,12 @@ contract IDUnionAuthenticator is owned {
 
     /*
     STEP 2: Set authentication URL/connection ID for QR-Code generation
+    This function can only be called by the user who is being authenticated.
     */
     function startUserAuthentication(uint256 requestId,
-                                     address addr,
                                      string connectionId,
                                      string connectionUrl) public {
-        require(msg.sender == addr,
-         "This function must be called by the user who is being authenticated.");
+        address addr = msg.sender;
 
         requestsLookup[connectionId] =
             AuthenticationRequest(
