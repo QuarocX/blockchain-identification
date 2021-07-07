@@ -32,6 +32,7 @@ contract IDUnionAuthenticator is owned {
     event ReVerificationRequired(string connectionId, string proof);
 
     mapping (string => string) private connectionIdToProof;
+    mapping (string => string) private connectionIdToUuid;
 
     mapping (string => AuthenticationRequest) private requestsLookup;
     mapping (address => string) public requestsReverseLookup;
@@ -161,6 +162,14 @@ contract IDUnionAuthenticator is owned {
      */
     function getProof(string connectionId) public view returns (string) {
         return connectionIdToProof[connectionId];
+    }
+    
+    function setUuid(string connectionId, string u_uid) onlyOwner public {
+        connectionIdToUuid[connectionId] = u_uid;
+    }
+    
+    function getUuid(string connectionId) public view returns (string) {
+        return connectionIdToUuid[connectionId];
     }
 
     function getAuthenticationRequest(string connectionId)
