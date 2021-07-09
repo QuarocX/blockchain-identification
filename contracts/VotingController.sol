@@ -9,6 +9,9 @@ contract VotingController is AnonymousVotingProxy, AuthenticationListener {
     
     IDUnionAuthenticator authenticationController;
 
+    // listen to this event in the verifier (admin side)
+    event ReVerificationRequired(string connectionId, string proof);
+
     constructor(address _anonVotingAddr, address _authenticatorAddr) AnonymousVotingProxy(_anonVotingAddr) public {
         authenticationController = IDUnionAuthenticator(_authenticatorAddr);
     }
@@ -23,7 +26,7 @@ contract VotingController is AnonymousVotingProxy, AuthenticationListener {
     The user then needs to pass all required proofs to the authenticationController
      which eventually calls onAuthenticationComplete to pre-register the (eligible) user.
 
-     -> See also STEP 1 - 5 in IDUnionAuthenticator.sol
+     -> See also STEP 1 - 4, 6 in IDUnionAuthenticator.sol
     */
     function preRegister() public {
         require(addresses.length <= 40, "Maximum of voters reached");
@@ -36,7 +39,37 @@ contract VotingController is AnonymousVotingProxy, AuthenticationListener {
     }
 
     /*
-     This function is called by the IDUnion Contract after all  
+     This function is called by the IDUnion contract (in STEP 4) to indicate 
+     that an additional re-verifcation/validation is required.
+     */
+    function onReVerificationRequired(string connectionId, string proof) {
+        require(msg.sender == address(authenticationController), 
+            "only the authentication controller is allowed to ask for validation");
+
+        /*
+         Currently this validation is done manually (STEP 5).
+         Alternatively, this would be the place to re-verify the proof automatically.
+         */
+
+         emit ReVerificationRequired(connectionId, proof);
+
+        // ---- FOR TESTING ONLY ----
+        // [then remove "onlyOwner" in called function]
+        // validateAuthenticationResult(connectionId, true);
+        // ---- END TESTING ----
+    }
+
+    /*
+    STEP 5: The voting initiator/admin re-verifies the IDUnion proof.
+    Set _eligible to true, if the IDUnion proof was correct or set it false otherwise.
+     */
+    function validateAuthenticationResult(string _connectionId, bool _eligible) onlyOwner public {
+        authenticationController.validateAuthenticationResult(_connectionId, _eligible);
+    }
+
+    /*
+     This function is called by the IDUnion contract after the request is finally
+      marked as finished (STEP 6) in the Authenticator.
     */
     function onAuthenticationComplete(address addr, bool result) {
         require(msg.sender == address(authenticationController), 

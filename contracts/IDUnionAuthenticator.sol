@@ -27,8 +27,6 @@ contract IDUnionAuthenticator {
     event UserAuthenticationRequired(address addr, string connectionId);
     event AuthenticationConnectionEstablished(string connectionId);
     event AuthenticationResultReady(string connectionId);
-    // listen to this event in the verifier (admin side)
-    event ReVerificationRequired(string connectionId, string proof);
 
     mapping (string => string) private connectionIdToProof;
 
@@ -121,16 +119,16 @@ contract IDUnionAuthenticator {
         request.status = AuthenticationRequestStatus.Validating;
 
         connectionIdToProof[connectionId] = proof;
-        emit ReVerificationRequired(connectionId, proof);
 
-        // ---- FOR TESTING ONLY ----
-        // [then remove "onlyOwner" in called function]
-        // validateAuthenticationResult(connectionId, result);
-        // ---- END TESTING ----
+        // notify request owner and ask vor validation/re-verification
+        AuthenticationListener listener = AuthenticationListener(request.sender);
+        listener.onReVerificationRequired(connectionId, proof);
     }
 
+    // STEP 5: re-verification/validation in request owner contract (e.g. VotingController)
+
     /*
-    STEP 5:
+    STEP 6:
     We want at least one automated trusted check so that a user can not add himself.
     This check needs to be performed by the smart contract which initially requested the authentication.
     (e.g. VotingController)
