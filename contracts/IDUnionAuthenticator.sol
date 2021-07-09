@@ -6,9 +6,9 @@ contract IDUnionAuthenticator {
 
     enum AuthenticationRequestStatus {
         NotValid,
-        Created, // new request was created
         Waiting, // waiting for user authentication
         Connected, // user connected to verifier
+        Validating, // request sender needs to validate that proof is correct
         Failure,
         Success
     }
@@ -21,12 +21,14 @@ contract IDUnionAuthenticator {
         string connectionUrl;
     }
 
-    // listen to this event in the verifier
+    // listen to this event in the verifier (user side)
     event AuthenticationRequested(uint256 requestId, address addr, string credentials);
     // events used in the user frontend
     event UserAuthenticationRequired(address addr, string connectionId);
     event AuthenticationConnectionEstablished(string connectionId);
     event AuthenticationResultReady(string connectionId);
+    // listen to this event in the verifier (admin side)
+    event ReVerificationRequired(string connectionId);
 
     mapping (string => AuthenticationRequest) private requestsLookup;
     mapping (address => string) public requestsReverseLookup;
@@ -38,7 +40,19 @@ contract IDUnionAuthenticator {
     string private credentials = '{"attributes":{"names":["firstName","familyName","addressStreet","addressCity","placeOfBirth","dateOfExpiry","addressCountry"]},"cred_def":{"restriction":[{"cred_def_id":"ELMkCtYoz86qnJKeQqrL1M:3:CL:165:masterID Dev Rev","schema_id":"BdriWEaTqe1LewNHbBbTSZ:2:masterID:0.1","schema_issuer_did":"BdriWEaTqe1LewNHbBbTSZ","schema_name":"masterID","schema_version":"0.1"}]},"attributes_restrictions":{"dateOfBirth":{"name":"dateOfBirth","p_type":"<=","p_value":20030101,"restrictions":[{"cred_def_id":"ELMkCtYoz86qnJKeQqrL1M:3:CL:165:masterID Dev Rev","schema_id":"BdriWEaTqe1LewNHbBbTSZ:2:masterID:0.1","schema_issuer_did":"BdriWEaTqe1LewNHbBbTSZ","schema_name":"masterID","schema_version":"0.1"}]},"postalCode1":{"name":"addressZipCode","p_type":"<=","p_value":14199,"restrictions":[{"cred_def_id":"ELMkCtYoz86qnJKeQqrL1M:3:CL:165:masterID Dev Rev","schema_id":"BdriWEaTqe1LewNHbBbTSZ:2:masterID:0.1","schema_issuer_did":"BdriWEaTqe1LewNHbBbTSZ","schema_name":"masterID","schema_version":"0.1"}]},"postalCode2":{"name":"addressZipCode","p_type":">=","p_value":10115,"restrictions":[{"cred_def_id":"ELMkCtYoz86qnJKeQqrL1M:3:CL:165:masterID Dev Rev","schema_id":"BdriWEaTqe1LewNHbBbTSZ:2:masterID:0.1","schema_issuer_did":"BdriWEaTqe1LewNHbBbTSZ","schema_name":"masterID","schema_version":"0.1"}]}}}';
 
     /*
-    STEP 1: Request authentication for a specific ethereum address
+    The verifier runs on the users side, i.e. we only want the user starting connections and pass us the proof.
+    Use this modifier for functions only allowed to be called by the user who initiated the authentication request.
+    */
+    modifier onlyUser(string connectionId) {
+        AuthenticationRequest request = requestsLookup[connectionId];
+        require(msg.sender == request.addr,
+         "This function must be called by the user who is being authenticated.");
+        _;
+    }
+
+    /*
+    STEP 1: Request authentication for a specific ethereum address.
+    This function must be called by a contract implementing the AuthenticationListener interface, e.g. the VotingController.
     */
     function requestAuthentication(address addr) public {
         uint256 requestId = nextRequestId++;
@@ -51,7 +65,7 @@ contract IDUnionAuthenticator {
         //AuthenticationListener listener = AuthenticationListener(msg.sender);
         //listener.onAuthenticationComplete(addr, true);
 
-        // OR use standard flow
+        // OR use standard flow [then remove "onlyOwner" in called functions]
         //startUserAuthentication(requestId, 0);
         //connectionEstablished(requestId);
         //setAuthenticationResult(requestId, true);
@@ -59,12 +73,14 @@ contract IDUnionAuthenticator {
     }
 
     /*
-    STEP 2: Get authentication URL/connection ID for QR-Code generation
+    STEP 2: Set authentication URL/connection ID for QR-Code generation
+    This function can only be called by the user who is being authenticated.
     */
     function startUserAuthentication(uint256 requestId,
-                                     address addr,
                                      string connectionId,
                                      string connectionUrl) public {
+        address addr = msg.sender;
+
         requestsLookup[connectionId] =
             AuthenticationRequest(
                 addr,
@@ -81,7 +97,7 @@ contract IDUnionAuthenticator {
     /*
     STEP 3: Verifier notifies contract that connection has been established
     */
-    function connectionEstablished(string connectionId) public {
+    function connectionEstablished(string connectionId) onlyUser(connectionId) public {
         AuthenticationRequest request = requestsLookup[connectionId];
         require(request.status == AuthenticationRequestStatus.Waiting, 
                 "connectionId is not waiting to establish a connection");
@@ -92,14 +108,39 @@ contract IDUnionAuthenticator {
     }
 
     /*
-    STEP 4: Set authentication result for the requestId.
-
-    result: authentication was succesful AND voter is eligible
+    STEP 4: Set authentication result for the given connectionId. 
+    Containing a proof which can be re-validated by the admin in STEP 5.
     */
-    function setAuthenticationResult(string connectionId, bool result) public {
+    function setAuthenticationResult(string connectionId, bool result) onlyUser(connectionId) public {
         AuthenticationRequest request = requestsLookup[connectionId];
         require(request.status == AuthenticationRequestStatus.Connected,
                 "requestId is not pending auth");
+
+        request.status = AuthenticationRequestStatus.Validating;
+
+        // TODO: store proof
+
+        emit ReVerificationRequired(connectionId);
+
+        // ---- FOR TESTING ONLY ----
+        // [then remove "onlyOwner" in called function]
+        // validateAuthenticationResult(connectionId, result);
+        // ---- END TESTING ----
+    }
+
+    /*
+    STEP 5:
+    We want at least one automated trusted check so that a user can not add himself.
+    This check needs to be performed by the smart contract which initially requested the authentication.
+    (e.g. VotingController)
+    
+    Any observer is also able to check and re-verify this proof.
+    */
+    function validateAuthenticationResult(string connectionId, bool result) public {
+        AuthenticationRequest request = requestsLookup[connectionId];
+        require(request.status == AuthenticationRequestStatus.Validating,
+                "requestId is not pending auth");
+        require(request.sender == msg.sender, "only the request owner can validate the authentication");
 
         if (result) {
             request.status = AuthenticationRequestStatus.Success;

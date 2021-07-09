@@ -18,6 +18,13 @@ contract VotingController is AnonymousVotingProxy, AuthenticationListener {
     mapping (address => bool) public eligible; // for efficient checking
     bool public openPreRegistration = true;
 
+    /* 
+    STEP 0: Any user can request a pre-registration. 
+    The user then needs to pass all required proofs to the authenticationController
+     which eventually calls onAuthenticationComplete to pre-register the (eligible) user.
+
+     -> See also STEP 1 - 5 in IDUnionAuthenticator.sol
+    */
     function preRegister() public {
         require(addresses.length <= 40, "Maximum of voters reached");
         require(openPreRegistration, "pre-registration phase has ended");
@@ -28,7 +35,12 @@ contract VotingController is AnonymousVotingProxy, AuthenticationListener {
         authenticationController.requestAuthentication(_sender);
     }
 
+    /*
+     This function is called by the IDUnion Contract after all  
+    */
     function onAuthenticationComplete(address addr, bool result) {
+        require(msg.sender == address(authenticationController), 
+            "only the authentication controller is allowed to set authentication result");
         if(!result || eligible[addr]) {
             return;
         }

@@ -2,8 +2,11 @@
     <button ng-if="!request.connectionUrl" class="btn btn-primary btn-lg" type="button"
         ng-click="preRegister()">Preregister</button>
 
-    <qrcode ng-if="request.connectionUrl && request.status == 2"
+    <qrcode ng-if="request.connectionUrl && request.status == 1"
         width="300" height="300" data="request.connectionUrl"></qrcode>
     
-    <div ng-if="request.status == 3">Connected. Waiting for Approval.</div>
+    <div ng-if="request.status == 2">Connected. Please send requested credentials in your Wallet App.</div>
+    <div ng-if="request.status == 3">Waiting for re-verification by voting administrator.</div>
+    <div ng-if="request.status == 4">Failed. Please try again.</div>
+    <div ng-if="request.status == 5">Success!</div>
 </div>
