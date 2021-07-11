@@ -29,6 +29,7 @@ contract IDUnionAuthenticator {
     event AuthenticationResultReady(string connectionId);
 
     mapping (string => string) private connectionIdToProof;
+    mapping (string => bool) private usedProofs;
 
     mapping (string => AuthenticationRequest) private requestsLookup;
     mapping (address => string) public requestsReverseLookup;
@@ -37,8 +38,8 @@ contract IDUnionAuthenticator {
     string[] public connectionIds;
     uint256 private nextRequestId = 1;
 
-    string private credentials = '{"attributes":{"names":["firstName","familyName","addressStreet","addressCity","placeOfBirth","dateOfExpiry","addressCountry"]},"cred_def":{"restriction":[{"cred_def_id":"ELMkCtYoz86qnJKeQqrL1M:3:CL:165:masterID Dev Rev","schema_id":"BdriWEaTqe1LewNHbBbTSZ:2:masterID:0.1","schema_issuer_did":"BdriWEaTqe1LewNHbBbTSZ","schema_name":"masterID","schema_version":"0.1"}]},"attributes_restrictions":{"dateOfBirth":{"name":"dateOfBirth","p_type":"<=","p_value":20030101,"restrictions":[{"cred_def_id":"ELMkCtYoz86qnJKeQqrL1M:3:CL:165:masterID Dev Rev","schema_id":"BdriWEaTqe1LewNHbBbTSZ:2:masterID:0.1","schema_issuer_did":"BdriWEaTqe1LewNHbBbTSZ","schema_name":"masterID","schema_version":"0.1"}]},"postalCode1":{"name":"addressZipCode","p_type":"<=","p_value":14199,"restrictions":[{"cred_def_id":"ELMkCtYoz86qnJKeQqrL1M:3:CL:165:masterID Dev Rev","schema_id":"BdriWEaTqe1LewNHbBbTSZ:2:masterID:0.1","schema_issuer_did":"BdriWEaTqe1LewNHbBbTSZ","schema_name":"masterID","schema_version":"0.1"}]},"postalCode2":{"name":"addressZipCode","p_type":">=","p_value":10115,"restrictions":[{"cred_def_id":"ELMkCtYoz86qnJKeQqrL1M:3:CL:165:masterID Dev Rev","schema_id":"BdriWEaTqe1LewNHbBbTSZ:2:masterID:0.1","schema_issuer_did":"BdriWEaTqe1LewNHbBbTSZ","schema_name":"masterID","schema_version":"0.1"}]}}}';
-
+    string private credentials = '{"proof_requests":[{"name":"Proof of age","attributes_restrictions":{"dateOfBirth":{"name":"dateOfBirth","p_type":"<=","p_value":20030101,"restrictions":[{"cred_def_id":"ELMkCtYoz86qnJKeQqrL1M:3:CL:165:masterID Dev Rev"}]},"ZipCodeSmall":{"name":"addressZipCode","p_type":"<=","p_value":14199,"restrictions":[{"cred_def_id":"ELMkCtYoz86qnJKeQqrL1M:3:CL:165:masterID Dev Rev"}]},"ZipCodeBig":{"name":"addressZipCode","p_type":">=","p_value":10115,"restrictions":[{"cred_def_id":"ELMkCtYoz86qnJKeQqrL1M:3:CL:165:masterID Dev Rev"}]}},"cred_def":{"restriction":[{"cred_def_id":"ELMkCtYoz86qnJKeQqrL1M:3:CL:165:masterID Dev Rev"}]}},{"name":"Proof of attributes","attributes":{"names":["firstName","familyName","addressStreet","addressCity","placeOfBirth","dateOfExpiry","dateOfBirth","addressZipCode","addressCountry"]},"attributes_restrictions":{"dateOfBirth":{"name":"dateOfBirth","p_type":"<=","p_value":20030101,"restrictions":[{"cred_def_id":"ELMkCtYoz86qnJKeQqrL1M:3:CL:165:masterID Dev Rev"}]},"ZipCodeSmall":{"name":"addressZipCode","p_type":"<=","p_value":14199,"restrictions":[{"cred_def_id":"ELMkCtYoz86qnJKeQqrL1M:3:CL:165:masterID Dev Rev"}]},"ZipCodeBig":{"name":"addressZipCode","p_type":">=","p_value":10115,"restrictions":[{"cred_def_id":"ELMkCtYoz86qnJKeQqrL1M:3:CL:165:masterID Dev Rev"}]}},"cred_def":{"restriction":[{"cred_def_id":"ELMkCtYoz86qnJKeQqrL1M:3:CL:165:masterID Dev Rev"}]}}]}';
+    
     /*
     The verifier runs on the users side, i.e. we only want the user starting connections and pass us the proof.
     Use this modifier for functions only allowed to be called by the user who initiated the authentication request.
@@ -115,10 +116,12 @@ contract IDUnionAuthenticator {
         AuthenticationRequest request = requestsLookup[connectionId];
         require(request.status == AuthenticationRequestStatus.Connected,
                 "requestId is not pending auth");
+        require(usedProofs[proof] == false, "This proof was already used for authentication.");
 
         request.status = AuthenticationRequestStatus.Validating;
 
         connectionIdToProof[connectionId] = proof;
+        usedProofs[proof] = true;
 
         // notify request owner and ask vor validation/re-verification
         AuthenticationListener listener = AuthenticationListener(request.sender);
