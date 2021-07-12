@@ -29,8 +29,8 @@ contract IDUnionAuthenticator {
     event AuthenticationResultReady(string connectionId);
 
     mapping (string => string) private connectionIdToProof;
-    //mapping (string => bool) private usedProofs;
-    String[] usedProofs;
+    mapping (string => bool) private usedProofs;
+    //string[] usedProofs;
 
     mapping (string => AuthenticationRequest) private requestsLookup;
     mapping (address => string) public requestsReverseLookup;
@@ -117,14 +117,14 @@ contract IDUnionAuthenticator {
         AuthenticationRequest request = requestsLookup[connectionId];
         require(request.status == AuthenticationRequestStatus.Connected,
                 "requestId is not pending auth");
-        //require(usedProofs[proof] == false, "This proof was already used for authentication.");
-        require(!(usedProofs[proof].exists),"This proof was already used for authentication." );
+        require(usedProofs[proof] == false, "This proof was already used for authentication.");
+        //require(!(usedProofs[proof].exists),"This proof was already used for authentication." );
 
         request.status = AuthenticationRequestStatus.Validating;
 
         connectionIdToProof[connectionId] = proof;
-        //usedProofs[proof] = true;
-        usedProofs.push(proof);
+        usedProofs[proof] = true;
+        //usedProofs.push(proof);
         // notify request owner and ask vor validation/re-verification
         AuthenticationListener listener = AuthenticationListener(request.sender);
         listener.onReVerificationRequired(connectionId, proof);
