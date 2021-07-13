@@ -20,6 +20,10 @@ contract IDUnionAuthenticator {
         AuthenticationRequestStatus status;
         string connectionUrl;
     }
+    struct Proof {
+        bytes[] data;
+        bool sealed; // whether all proof chunks have been provided
+    }
 
     // listen to this event in the verifier (user side)
     event AuthenticationRequested(uint256 requestId, address addr, string credentials);
@@ -28,7 +32,7 @@ contract IDUnionAuthenticator {
     event AuthenticationConnectionEstablished(string connectionId);
     event AuthenticationResultReady(string connectionId);
 
-    mapping (string => string) private connectionIdToProof;
+    mapping (string => Proof) private connectionIdToProof;
 
     mapping (string => AuthenticationRequest) private requestsLookup;
     mapping (address => string) public requestsReverseLookup;
@@ -111,18 +115,23 @@ contract IDUnionAuthenticator {
     STEP 4: Set authentication result for the given connectionId. 
     Containing a proof which can be re-validated by the admin in STEP 5.
     */
-    function setAuthenticationResult(string connectionId, string proof) onlyUser(connectionId) public {
+    function setAuthenticationResult(string connectionId, bytes proofChunk, bool seal) onlyUser(connectionId) public {
         AuthenticationRequest request = requestsLookup[connectionId];
         require(request.status == AuthenticationRequestStatus.Connected,
                 "requestId is not pending auth");
+        require(!connectionIdToProof[connectionId].sealed, "Proof is already sealed");
 
-        request.status = AuthenticationRequestStatus.Validating;
 
-        connectionIdToProof[connectionId] = proof;
+        connectionIdToProof[connectionId].data.push(proofChunk);
+        connectionIdToProof[connectionId].sealed = seal;
 
-        // notify request owner and ask vor validation/re-verification
-        AuthenticationListener listener = AuthenticationListener(request.sender);
-        listener.onReVerificationRequired(connectionId, proof);
+        if (seal) {
+            request.status = AuthenticationRequestStatus.Validating;
+
+            // notify request owner and ask vor validation/re-verification
+            AuthenticationListener listener = AuthenticationListener(request.sender);
+            listener.onReVerificationRequired(connectionId, getProof(connectionId));
+        }
     }
 
     // STEP 5: re-verification/validation in request owner contract (e.g. VotingController)
@@ -157,8 +166,16 @@ contract IDUnionAuthenticator {
      /*
      Observers can call this function to get the stored proof of a specific connectionId and re-verify it.
      */
-    function getProof(string connectionId) public view returns (string) {
-        return connectionIdToProof[connectionId];
+    function getProof(string connectionId) public view returns (bytes result) {
+        Proof p = connectionIdToProof[connectionId];
+        if (p.sealed) {
+            // concat all proof chunks
+            for (uint i = 0; i < p.data.length; i++) {
+                if (p.data[i].length > 0) { // ignore empty data otherwise crash
+                    result = abi.encodePacked(result, p.data[i]);
+                }
+            }
+        }
     }
 
     function getAuthenticationRequest(string connectionId)
