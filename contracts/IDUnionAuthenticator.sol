@@ -32,12 +32,8 @@ contract IDUnionAuthenticator {
     event AuthenticationConnectionEstablished(string connectionId);
     event AuthenticationResultReady(string connectionId);
 
-<<<<<<< HEAD
-    mapping (string => string) private connectionIdToProof;
-    mapping (string => bool) private usedProofs;
-=======
+    mapping (bytes32 => bool) private usedProofs;
     mapping (string => Proof) private connectionIdToProof;
->>>>>>> c25d4c3e12a6dfa9bc0b1a97b3aac18b57466a0e
 
     mapping (string => AuthenticationRequest) private requestsLookup;
     mapping (address => string) public requestsReverseLookup;
@@ -124,31 +120,34 @@ contract IDUnionAuthenticator {
         AuthenticationRequest request = requestsLookup[connectionId];
         require(request.status == AuthenticationRequestStatus.Connected,
                 "requestId is not pending auth");
-<<<<<<< HEAD
-        require(usedProofs[proof] == false, "This proof was already used for authentication.");
-=======
         require(!connectionIdToProof[connectionId].sealed, "Proof is already sealed");
->>>>>>> c25d4c3e12a6dfa9bc0b1a97b3aac18b57466a0e
 
-
-<<<<<<< HEAD
-        connectionIdToProof[connectionId] = proof;
-        usedProofs[proof] = true;
-        // notify request owner and ask vor validation/re-verification
-        AuthenticationListener listener = AuthenticationListener(request.sender);
-        listener.onReVerificationRequired(connectionId, proof);
-=======
         connectionIdToProof[connectionId].data.push(proofChunk);
         connectionIdToProof[connectionId].sealed = seal;
 
         if (seal) {
+            startInternalValidation(connectionId, request);
+        }
+    }
+
+    /*
+        Before starting re-verification of a proof, we need to do some additional checks:
+         - check unqiueness of the proof in this contract.
+    */
+    function startInternalValidation(string connectionId, AuthenticationRequest request) private {
+        bytes memory proof = getProof(connectionId);
+        bytes32 hashedProof = keccak256(proof);
+        
+        if(!usedProofs[hashedProof]) { // This proof was already used for authentication.
+            request.status = AuthenticationRequestStatus.Failure;
+        } else { // start external validation
             request.status = AuthenticationRequestStatus.Validating;
+            usedProofs[hashedProof] = true;
 
             // notify request owner and ask vor validation/re-verification
             AuthenticationListener listener = AuthenticationListener(request.sender);
-            listener.onReVerificationRequired(connectionId, getProof(connectionId));
+            listener.onReVerificationRequired(connectionId, proof);
         }
->>>>>>> c25d4c3e12a6dfa9bc0b1a97b3aac18b57466a0e
     }
 
     // STEP 5: re-verification/validation in request owner contract (e.g. VotingController)
