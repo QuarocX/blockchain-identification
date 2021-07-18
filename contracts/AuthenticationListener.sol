@@ -1,4 +1,4 @@
 interface AuthenticationListener {
-    function onReVerificationRequired(string connectionId, string proof);
+    function onReVerificationRequired(string connectionId, bytes proof);
     function onAuthenticationComplete(address addr, bool result);
 }
