@@ -138,7 +138,7 @@ contract IDUnionAuthenticator {
         bytes memory proof = getProof(connectionId);
         bytes32 hashedProof = keccak256(proof);
         
-        if(!usedProofs[hashedProof]) { // This proof was already used for authentication.
+        if(usedProofs[hashedProof]) { // This proof was already used for authentication.
             request.status = AuthenticationRequestStatus.Failure;
         } else { // start external validation
             request.status = AuthenticationRequestStatus.Validating;
