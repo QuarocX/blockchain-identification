@@ -23,7 +23,9 @@
 			return this.contract.getPreRegisteredVoterCount().toNumber();
 		}
         async isPreRegistered() {
-            return this.contract.methods.isPreRegistered().call()
+            return this.contract.methods.isPreRegistered().call({
+                from: this.activeAccount
+            });
         }
         on(eventName, callback) {
             this.contract.events[eventName](null, (err, ev) => {
