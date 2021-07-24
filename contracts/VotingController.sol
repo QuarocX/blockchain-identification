@@ -10,7 +10,7 @@ contract VotingController is AnonymousVotingProxy, AuthenticationListener {
     IDUnionAuthenticator authenticationController;
 
     // listen to this event in the verifier (admin side)
-    event ReVerificationRequired(string connectionId, string proof);
+    event ReVerificationRequired(string connectionId, bytes proof);
 
     constructor(address _anonVotingAddr, address _authenticatorAddr) AnonymousVotingProxy(_anonVotingAddr) public {
         authenticationController = IDUnionAuthenticator(_authenticatorAddr);
@@ -42,7 +42,7 @@ contract VotingController is AnonymousVotingProxy, AuthenticationListener {
      This function is called by the IDUnion contract (in STEP 4) to indicate 
      that an additional re-verifcation/validation is required.
      */
-    function onReVerificationRequired(string connectionId, string proof) {
+    function onReVerificationRequired(string connectionId, bytes proof) {
         require(msg.sender == address(authenticationController), 
             "only the authentication controller is allowed to ask for validation");
 

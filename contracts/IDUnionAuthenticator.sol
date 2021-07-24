@@ -20,6 +20,10 @@ contract IDUnionAuthenticator {
         AuthenticationRequestStatus status;
         string connectionUrl;
     }
+    struct Proof {
+        bytes[] data;
+        bool sealed; // whether all proof chunks have been provided
+    }
 
     // listen to this event in the verifier (user side)
     event AuthenticationRequested(uint256 requestId, address addr, string credentials);
@@ -28,7 +32,8 @@ contract IDUnionAuthenticator {
     event AuthenticationConnectionEstablished(string connectionId);
     event AuthenticationResultReady(string connectionId);
 
-    mapping (string => string) private connectionIdToProof;
+    mapping (bytes32 => bool) private usedProofs;
+    mapping (string => Proof) private connectionIdToProof;
 
     mapping (string => AuthenticationRequest) private requestsLookup;
     mapping (address => string) public requestsReverseLookup;
@@ -37,8 +42,8 @@ contract IDUnionAuthenticator {
     string[] public connectionIds;
     uint256 private nextRequestId = 1;
 
-    string private credentials = '{"attributes":{"names":["firstName","familyName","addressStreet","addressCity","placeOfBirth","dateOfExpiry","addressCountry"]},"cred_def":{"restriction":[{"cred_def_id":"ELMkCtYoz86qnJKeQqrL1M:3:CL:165:masterID Dev Rev","schema_id":"BdriWEaTqe1LewNHbBbTSZ:2:masterID:0.1","schema_issuer_did":"BdriWEaTqe1LewNHbBbTSZ","schema_name":"masterID","schema_version":"0.1"}]},"attributes_restrictions":{"dateOfBirth":{"name":"dateOfBirth","p_type":"<=","p_value":20030101,"restrictions":[{"cred_def_id":"ELMkCtYoz86qnJKeQqrL1M:3:CL:165:masterID Dev Rev","schema_id":"BdriWEaTqe1LewNHbBbTSZ:2:masterID:0.1","schema_issuer_did":"BdriWEaTqe1LewNHbBbTSZ","schema_name":"masterID","schema_version":"0.1"}]},"postalCode1":{"name":"addressZipCode","p_type":"<=","p_value":14199,"restrictions":[{"cred_def_id":"ELMkCtYoz86qnJKeQqrL1M:3:CL:165:masterID Dev Rev","schema_id":"BdriWEaTqe1LewNHbBbTSZ:2:masterID:0.1","schema_issuer_did":"BdriWEaTqe1LewNHbBbTSZ","schema_name":"masterID","schema_version":"0.1"}]},"postalCode2":{"name":"addressZipCode","p_type":">=","p_value":10115,"restrictions":[{"cred_def_id":"ELMkCtYoz86qnJKeQqrL1M:3:CL:165:masterID Dev Rev","schema_id":"BdriWEaTqe1LewNHbBbTSZ:2:masterID:0.1","schema_issuer_did":"BdriWEaTqe1LewNHbBbTSZ","schema_name":"masterID","schema_version":"0.1"}]}}}';
-
+    string private credentials = '{"proof_requests":[{"name":"Proof of age","attributes_restrictions":{"dateOfBirth":{"name":"dateOfBirth","p_type":"<=","p_value":20030101,"restrictions":[{"cred_def_id":"ELMkCtYoz86qnJKeQqrL1M:3:CL:165:masterID Dev Rev"}]},"ZipCodeSmall":{"name":"addressZipCode","p_type":"<=","p_value":14199,"restrictions":[{"cred_def_id":"ELMkCtYoz86qnJKeQqrL1M:3:CL:165:masterID Dev Rev"}]},"ZipCodeBig":{"name":"addressZipCode","p_type":">=","p_value":10115,"restrictions":[{"cred_def_id":"ELMkCtYoz86qnJKeQqrL1M:3:CL:165:masterID Dev Rev"}]}},"cred_def":{"restriction":[{"cred_def_id":"ELMkCtYoz86qnJKeQqrL1M:3:CL:165:masterID Dev Rev"}]}},{"name":"Proof of attributes","attributes":{"names":["firstName","familyName","addressStreet","addressCity","placeOfBirth","dateOfExpiry","dateOfBirth","addressZipCode","addressCountry"]},"attributes_restrictions":{"dateOfBirth":{"name":"dateOfBirth","p_type":"<=","p_value":20030101,"restrictions":[{"cred_def_id":"ELMkCtYoz86qnJKeQqrL1M:3:CL:165:masterID Dev Rev"}]},"ZipCodeSmall":{"name":"addressZipCode","p_type":"<=","p_value":14199,"restrictions":[{"cred_def_id":"ELMkCtYoz86qnJKeQqrL1M:3:CL:165:masterID Dev Rev"}]},"ZipCodeBig":{"name":"addressZipCode","p_type":">=","p_value":10115,"restrictions":[{"cred_def_id":"ELMkCtYoz86qnJKeQqrL1M:3:CL:165:masterID Dev Rev"}]}},"cred_def":{"restriction":[{"cred_def_id":"ELMkCtYoz86qnJKeQqrL1M:3:CL:165:masterID Dev Rev"}]}}]}';
+    
     /*
     The verifier runs on the users side, i.e. we only want the user starting connections and pass us the proof.
     Use this modifier for functions only allowed to be called by the user who initiated the authentication request.
@@ -111,18 +116,38 @@ contract IDUnionAuthenticator {
     STEP 4: Set authentication result for the given connectionId. 
     Containing a proof which can be re-validated by the admin in STEP 5.
     */
-    function setAuthenticationResult(string connectionId, string proof) onlyUser(connectionId) public {
+    function setAuthenticationResult(string connectionId, bytes proofChunk, bool seal) onlyUser(connectionId) public {
         AuthenticationRequest request = requestsLookup[connectionId];
         require(request.status == AuthenticationRequestStatus.Connected,
                 "requestId is not pending auth");
+        require(!connectionIdToProof[connectionId].sealed, "Proof is already sealed");
 
-        request.status = AuthenticationRequestStatus.Validating;
+        connectionIdToProof[connectionId].data.push(proofChunk);
+        connectionIdToProof[connectionId].sealed = seal;
 
-        connectionIdToProof[connectionId] = proof;
+        if (seal) {
+            startInternalValidation(connectionId, request);
+        }
+    }
 
-        // notify request owner and ask vor validation/re-verification
-        AuthenticationListener listener = AuthenticationListener(request.sender);
-        listener.onReVerificationRequired(connectionId, proof);
+    /*
+        Before starting re-verification of a proof, we need to do some additional checks:
+         - check unqiueness of the proof in this contract.
+    */
+    function startInternalValidation(string connectionId, AuthenticationRequest request) private {
+        bytes memory proof = getProof(connectionId);
+        bytes32 hashedProof = keccak256(proof);
+        
+        if(usedProofs[hashedProof]) { // This proof was already used for authentication.
+            request.status = AuthenticationRequestStatus.Failure;
+        } else { // start external validation
+            request.status = AuthenticationRequestStatus.Validating;
+            usedProofs[hashedProof] = true;
+
+            // notify request owner and ask vor validation/re-verification
+            AuthenticationListener listener = AuthenticationListener(request.sender);
+            listener.onReVerificationRequired(connectionId, proof);
+        }
     }
 
     // STEP 5: re-verification/validation in request owner contract (e.g. VotingController)
@@ -157,8 +182,16 @@ contract IDUnionAuthenticator {
      /*
      Observers can call this function to get the stored proof of a specific connectionId and re-verify it.
      */
-    function getProof(string connectionId) public view returns (string) {
-        return connectionIdToProof[connectionId];
+    function getProof(string connectionId) public view returns (bytes result) {
+        Proof p = connectionIdToProof[connectionId];
+        if (p.sealed) {
+            // concat all proof chunks
+            for (uint i = 0; i < p.data.length; i++) {
+                if (p.data[i].length > 0) { // ignore empty data otherwise crash
+                    result = abi.encodePacked(result, p.data[i]);
+                }
+            }
+        }
     }
 
     function getAuthenticationRequest(string connectionId)
