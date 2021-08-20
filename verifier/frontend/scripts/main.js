@@ -9,6 +9,18 @@
     let Web3 = window.Web3;
     let app = window.app;
 
+    /*
+    let initiator_ip;
+    fetch('/config.json')
+        .then(data => data.json())
+        .then(json => {
+            console.log(json); 
+            initiator_ip = json;
+            let web3 = new Web3(//Web3.givenProvider ||
+                new Web3.providers.WebsocketProvider(`ws://${initiator_ip}:8545`));
+        })
+    */
+
     let web3 = new Web3(//Web3.givenProvider ||
         new Web3.providers.WebsocketProvider(`ws://${window.location.hostname}:8545`));
 
