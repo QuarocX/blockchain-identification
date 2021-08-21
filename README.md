@@ -7,6 +7,8 @@ determination of eligibility to participate in the deployed voting contract.
 The elligibility is determined by verifying the identity of participating
 individual through interactions with IDUnion's hyperledger.
 
+For more information see the main branch!
+
 ## Design
 
 The repository consists of two entities namely the initiator and verifier.
