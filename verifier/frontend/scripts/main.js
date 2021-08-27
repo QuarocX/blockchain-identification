@@ -20,7 +20,7 @@
                 new Web3.providers.WebsocketProvider(`ws://${initiator_ip}:8545`));
         })
     */
-
+    
     let web3 = new Web3(//Web3.givenProvider ||
         new Web3.providers.WebsocketProvider(`ws://${window.location.hostname}:8545`));
 

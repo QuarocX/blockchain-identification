@@ -1,18 +1,18 @@
 {
   "AnonymousVoting": {
     "abi": "AnonymousVoting.json",
-    "address": "0x50EEd5afA1b1B37474AD5Aa1D5E8931b08383136"
+    "address": "0xDB3e728CF347d10E5b89123afEc2bdE190ff9a04"
   },
   "LocalCrypto": {
     "abi": "LocalCrypto.json",
-    "address": "0x44e18c0F35DAc638fD68B5592a0FF7C947DEe648"
+    "address": "0x3CD06fF9a7112e9B06A79f0f2BFc93A37132bDbc"
   },
   "VotingController": {
     "abi": "VotingController.json",
-    "address": "0xf6E8b4A12EB47a09Ef20cbF88a156e6aFf01007a"
+    "address": "0x0cAd990134CDe21126525b523eE20C72686d25b8"
   },
   "IDUnionAuthenticator": {
     "abi": "IDUnionAuthenticator.json",
-    "address": "0x314F2DB011005D6B7F9Bfd05A60CD29fe3e6b915"
+    "address": "0x61e0F2ff5dCfB0CBa458A97b592d3021466FFFaa"
   }
 }
