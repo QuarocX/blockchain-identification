@@ -39,3 +39,7 @@ the voter side.
 In production, run the appropriate commands for the initiator and the verifier 
 in `local_setup.sh` and `local_run.sh` seperately in the admin and the voter side.
 
+## Set
+
+Set the initiator ip in `verifier/frontend/scripts/main.js` in line 13
+for building websocket to ganache in the initiator side.
