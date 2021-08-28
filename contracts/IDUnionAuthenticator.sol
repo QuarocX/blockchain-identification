@@ -132,7 +132,7 @@ contract IDUnionAuthenticator {
         Before starting re-verification of a proof, we need to do some additional checks:
          - check unqiueness of the proof in this contract.
     */
-    function startInternalValidation(string connectionId, AuthenticationRequest request) private {
+    function startInternalValidation(string connectionId, AuthenticationRequest storage request) private {
         bytes memory proof = getProof(connectionId);
         bytes32 hashedProof = keccak256(proof);
         
