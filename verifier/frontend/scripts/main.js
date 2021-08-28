@@ -10,7 +10,7 @@
     let app = window.app;
 
     let web3 = new Web3(//Web3.givenProvider ||
-        new Web3.providers.WebsocketProvider(`ws://${window.location.hostname}:8545`));
+        new Web3.providers.WebsocketProvider(`ws://192.168.1.18:8545`));
 
     app.ng = angular.module('votingApp', ['ui.router']);
     app.ng.constant('web3', web3);
